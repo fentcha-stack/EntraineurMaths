@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Carnet UE1.4 — suivi et points faibles</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EDF1F0; --paper:#FBFCFB; --ink:#1C2B33; --muted:#5B6B72; --rule:#C9D3D1;
+  --pen:#2340A8; --pen-soft:#DCE3F7; --ok:#1E7A4E; --ok-soft:#DDEFE5; --ko:#B3261E; --ko-soft:#F6DEDC; --warn:#9A6500; --warn-soft:#F7ECD6;
+  --serif:"Source Serif 4", Georgia, "Times New Roman", serif;
+  --sans:"Atkinson Hyperlegible", "Segoe UI", system-ui, -apple-system, sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121A1E; --paper:#1A2429; --ink:#E3EAEC; --muted:#9AAAB0; --rule:#33434A;
+    --pen:#8FA6FF; --pen-soft:#25305A; --ok:#5FCB95; --ok-soft:#1D3A2C; --ko:#F08A82; --ko-soft:#43211F; --warn:#E3B562; --warn-soft:#3A2F1A;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121A1E; --paper:#1A2429; --ink:#E3EAEC; --muted:#9AAAB0; --rule:#33434A;
+  --pen:#8FA6FF; --pen-soft:#25305A; --ok:#5FCB95; --ok-soft:#1D3A2C; --ko:#F08A82; --ko-soft:#43211F; --warn:#E3B562; --warn-soft:#3A2F1A;
+}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 110px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.5}
+button,input,select,textarea{font:inherit;color:inherit}
+.wrap{max-width:820px;margin:0 auto;padding:0 18px 60px}
+header.top .wrap{padding-bottom:0}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:var(--bg);border-bottom:1px solid var(--rule);padding:12px 0 0}
+.brand{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.brand h1{font-family:var(--serif);font-weight:600;font-size:1.35rem;margin:0}
+.sync{font-size:.82rem;color:var(--muted)}
+.sync.bad{color:var(--ko)}
+nav.tabs{display:flex;gap:4px;margin-top:8px;overflow-x:auto}
+nav.tabs button{background:none;border:none;border-bottom:3px solid transparent;padding:8px 12px;cursor:pointer;color:var(--muted);font-weight:700;white-space:nowrap}
+nav.tabs button[aria-current="page"]{color:var(--pen);border-bottom-color:var(--pen)}
+nav.tabs .count{display:inline-block;min-width:20px;padding:0 6px;margin-left:4px;border-radius:10px;background:var(--ko);color:var(--paper);font-size:.75rem;line-height:20px;text-align:center}
+main{padding-top:18px}
+h2{font-family:var(--serif);font-weight:600;font-size:1.25rem;margin:24px 0 8px}
+h2:first-child{margin-top:0}
+.muted{color:var(--muted)}
+.small{font-size:.88rem}
+.panel{background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:16px 18px;margin:0 0 14px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.stat{background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:12px 14px}
+.stat b{display:block;font-family:var(--serif);font-size:1.6rem;line-height:1.1}
+.stat span{font-size:.85rem;color:var(--muted)}
+.prio{display:grid;gap:10px}
+.prio .item{display:grid;grid-template-columns:34px 1fr;gap:12px;align-items:start}
+.prio .rank{width:34px;height:34px;border-radius:50%;border:2px solid var(--ko);color:var(--ko);display:grid;place-items:center;font-weight:700}
+.prio .item b{display:block}
+.btn{font-weight:700;border-radius:4px;padding:9px 16px;cursor:pointer;border:1.5px solid var(--pen);background:transparent;color:var(--pen)}
+.btn.primary{background:var(--pen);color:var(--paper)}
+.btn.small{padding:5px 11px;font-size:.88rem}
+.btn.danger{border-color:var(--ko);color:var(--ko)}
+.btn:disabled{opacity:.4;cursor:default}
+.btn:focus-visible,.chip:focus-visible,nav.tabs button:focus-visible{outline:2px solid var(--pen);outline-offset:2px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.trend{display:inline-block;font-size:.74rem;font-weight:700;line-height:1;padding:4px 7px;border-radius:3px;white-space:nowrap;vertical-align:1px}
+.t-sys{background:var(--pen);color:var(--paper);border:1.5px solid var(--pen)}
+.t-tf{color:var(--pen);border:1.5px solid var(--pen)}
+.t-up{background:var(--ok-soft);color:var(--ok);border:1.5px solid var(--ok)}
+.t-reg{color:var(--muted);border:1.5px dashed var(--muted)}
+table.notions{width:100%;border-collapse:collapse;font-size:.92rem}
+table.notions th{text-align:left;color:var(--muted);font-weight:400;font-size:.82rem;padding:4px 6px;border-bottom:1px solid var(--rule)}
+table.notions td{padding:8px 6px;border-bottom:1px solid var(--rule);vertical-align:middle}
+table.notions tr.click{cursor:pointer}
+table.notions tr.click:hover td{background:var(--pen-soft)}
+.bar{height:8px;border-radius:4px;background:var(--rule);overflow:hidden;min-width:70px}
+.bar i{display:block;height:100%;background:var(--ok)}
+.bar i.mid{background:var(--warn)} .bar i.low{background:var(--ko)}
+.tw{overflow-x:auto}
+.menu{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
+.card{background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:14px 16px;text-align:left;cursor:pointer;color:var(--ink)}
+.card:hover{border-color:var(--pen)}
+.card b{display:block;font-size:1.02rem;margin-bottom:2px}
+.card span{color:var(--muted);font-size:.88rem}
+.card.hot{border:2px solid var(--ko)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1.5px solid var(--rule);background:transparent;padding:5px 11px;border-radius:999px;cursor:pointer;font-size:.88rem}
+.chip[aria-pressed="true"]{border-color:var(--pen);background:var(--pen-soft);color:var(--pen);font-weight:700}
+/* question sheet */
+.sheet{background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:20px;margin-bottom:14px}
+.qmeta{font-size:.84rem;color:var(--muted);margin-bottom:8px}
+.stem{font-family:var(--serif);font-size:1.04rem;line-height:1.6;margin:0 0 12px}
+.stem table,.corr table{border-collapse:collapse;font-family:var(--sans);font-size:.9rem;margin:8px 0;background:var(--paper)}
+.stem th,.stem td,.corr th,.corr td{border:1px solid var(--rule);padding:4px 9px;text-align:center}
+.ask{font-weight:700;margin:0 0 8px}
+ol.props{list-style:none;margin:0;padding:0}
+.prop{display:flex;gap:14px;align-items:flex-start;padding:8px 6px;border-radius:4px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.prop:focus-visible{outline:2px solid var(--pen);outline-offset:2px}
+.bubble{flex:none;width:30px;height:30px;border-radius:50%;border:1.8px solid var(--ink);display:grid;place-items:center;font-weight:700;font-size:.9rem}
+.prop[aria-checked="true"] .bubble{background:var(--pen);border-color:var(--pen);color:var(--paper)}
+.prop .txt{padding-top:3px}
+.locked .prop{cursor:default}
+.prop.v-ok{background:var(--ok-soft)} .prop.v-ko{background:var(--ko-soft)}
+.mark{display:block;font-size:.84rem;font-weight:700}
+.v-ok .mark{color:var(--ok)} .v-ko .mark{color:var(--ko)}
+.corr{margin-top:14px;border-top:2px solid var(--rule);padding-top:12px}
+.corr .ans{font-weight:700;margin:0 0 8px}
+.corr .ans.good{color:var(--ok)} .corr .ans.bad{color:var(--ko)}
+.corr h3{font-size:.98rem;margin:12px 0 6px}
+.corr ol.steps{margin:0;padding-left:1.3em;font-family:var(--serif);line-height:1.65}
+.corr ol.steps li{margin-bottom:6px}
+.corr .calc{display:block;font-family:var(--sans);background:var(--bg);border-radius:4px;padding:6px 10px;margin:4px 0;overflow-x:auto;white-space:nowrap}
+.corr ul.why{list-style:none;padding:0;margin:0}
+.corr ul.why li{padding:5px 0;border-bottom:1px dashed var(--rule);font-family:var(--serif)}
+.tip{margin-top:10px;padding:10px 12px;border-left:4px solid var(--pen);background:var(--pen-soft);border-radius:0 4px 4px 0;font-size:.94rem}
+.diag{margin-top:12px;padding:12px 14px;border:1.5px solid var(--ko);border-radius:6px;background:var(--ko-soft)}
+.diag p{margin:0 0 8px;font-weight:700}
+textarea{width:100%;min-height:64px;border:1px solid var(--rule);border-radius:4px;padding:8px;background:var(--paper);resize:vertical}
+input[type=date],input[type=number],select{border:1px solid var(--rule);border-radius:4px;padding:7px 9px;background:var(--paper)}
+input[type=number]{width:80px}
+.runbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.clock{font-variant-numeric:tabular-nums;font-weight:700}
+.clock.late{color:var(--ko)}
+/* carnet */
+.entry{background:var(--paper);border:1px solid var(--rule);border-left:5px solid var(--ko);border-radius:6px;padding:14px 16px;margin-bottom:10px}
+.entry.progress{border-left-color:var(--warn)} .entry.ok{border-left-color:var(--ok)}
+.entry h3{font-size:1rem;margin:0 0 4px}
+.pill{display:inline-block;font-size:.78rem;font-weight:700;padding:2px 8px;border-radius:999px}
+.pill.open{background:var(--ko-soft);color:var(--ko)} .pill.progress{background:var(--warn-soft);color:var(--warn)} .pill.ok{background:var(--ok-soft);color:var(--ok)}
+.entry .preview{font-family:var(--serif);font-size:.95rem;color:var(--muted);margin:6px 0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.entry .preview table{display:none}
+details summary{cursor:pointer;color:var(--pen);font-weight:700;font-size:.9rem;margin-top:8px}
+/* annales */
+.form{display:grid;gap:10px}
+.form label{font-size:.86rem;color:var(--muted);display:block;margin-bottom:3px}
+table.list{width:100%;border-collapse:collapse;font-size:.92rem}
+table.list td,table.list th{padding:7px 6px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+table.list th{font-weight:400;color:var(--muted);font-size:.82rem}
+svg.chart{width:100%;height:auto;display:block}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.84rem;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.empty{padding:18px;border:1.5px dashed var(--rule);border-radius:6px;color:var(--muted);text-align:center}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:9px 16px;border-radius:4px;font-size:.9rem;z-index:30}
+footer{margin-top:30px;padding-top:14px;border-top:1px solid var(--rule);font-size:.85rem;color:var(--muted)}
+[hidden]{display:none!important}
+@media (max-width:560px){.sheet{padding:16px 12px}.panel{padding:14px 12px}table.notions .hide-s{display:none}}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <div class="brand"><h1>Carnet UE1.4</h1><span class="sync" id="sync">Enregistré sur cet appareil</span></div>
+  <nav class="tabs" id="tabs" aria-label="Sections">
+    <button data-t="dash">Tableau de bord</button>
+    <button data-t="train">S'entraîner</button>
+    <button data-t="carnet">Carnet d'erreurs<span class="count" id="cnt" hidden></span></button>
+    <button data-t="annales">Annales</button>
+  </nav>
+</div></header>
+<div class="wrap"><main id="main"></main>
+<footer>
+  <div class="row">
+    <span>Sauvegarde :</span>
+    <button class="btn small" id="exportBtn">Exporter mes données</button>
+    <label class="btn small" style="display:inline-block">Importer<input type="file" id="importFile" accept="application/json,.json" hidden></label>
+    <button class="btn small danger" id="resetBtn">Tout effacer</button>
+  </div>
+  <p class="small">Tendances calculées sur les 12 sujets 2020-2026. Les corrigés sont des corrigés personnels, à confronter au corrigé officiel.</p>
+</footer></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const BANK = [{"id": "E01", "set": "E", "num": 1, "k": "np", "title": "Entraînement · question 1", "src": "Type tombé dans les 12 sujets", "stem": "On compare un nouvel antalgique à l'antalgique de référence. Deux groupes indépendants sont tirés au sort ; on note le délai de soulagement (minutes).\n <div class=\"tw\"><table><tr><th>Nouveau</th><td>12</td><td>15</td><td>9</td><td>14</td><td>11</td><td>10</td><td>13</td><td></td></tr>\n <tr><th>Référence</th><td>18</td><td>16</td><td>21</td><td>14</td><td>19</td><td>17</td><td>22</td><td>20</td></tr></table></div>", "props": ["On effectue un test de Wilcoxon.", "On effectue un test de Mann-Whitney.", "On ne peut effectuer aucun test car la normalité des échantillons n'est pas connue.", "Au risque de 5 %, il y a une différence significative entre les deux antalgiques.", "Au risque de 1 %, on peut affirmer que les deux antalgiques ont la même efficacité."], "ok": [1, 3], "steps": ["Choix du test : groupes indépendants (tirés au sort séparément), n₁ = 7 et n₂ = 8 ≤ 20, normalité inconnue → Mann-Whitney.", "Trier la réunion des deux échantillons (N = nouveau, R = référence) :<span class=\"calc\">9N · 10N · 11N · 12N · 13N · 14N 14R · 15N · 16R · 17R · 18R · 19R · 20R · 21R · 22R</span>", "Pour chaque valeur « Nouveau », compter les valeurs « Référence » situées après elle (un ex-aequo compte ½) :<div class=\"tw\"><table><tr><th>Nouveau</th><td>9</td><td>10</td><td>11</td><td>12</td><td>13</td><td>14</td><td>15</td></tr><tr><th>R au-dessus</th><td>8</td><td>8</td><td>8</td><td>8</td><td>8</td><td>7 + ½</td><td>7</td></tr></table></div><span class=\"calc\">u₁ = 8 + 8 + 8 + 8 + 8 + 7,5 + 7 = 54,5</span>", "Utiliser u₁ + u₂ = n₁ × n₂ :<span class=\"calc\">u₂ = 7 × 8 − 54,5 = 1,5 → u = min(54,5 ; 1,5) = 1,5</span>", "Tables de Mann-Whitney pour n₁ = 7, n₂ = 8 : 10 à 5 % et 6 à 1 %.<span class=\"calc\">u = 1,5 ≤ 10 → rejet de H₀ à 5 % (et aussi à 1 % car 1,5 ≤ 6)</span>"], "why": ["Faux : Wilcoxon est réservé aux données appariées.", "Vrai : groupes indépendants, petits effectifs.", "Faux : les tests non paramétriques ne demandent justement pas la normalité.", "Vrai : u = 1,5 ≤ 10.", "Faux : le test est significatif même à 1 %, et on n'« affirme » jamais l'égalité (H₀)."], "tip": "On rejette H₀ quand u est PETIT (u ≤ valeur de la table). Contrôle : u₁ + u₂ = n₁ × n₂."}, {"id": "E02", "set": "E", "num": 2, "k": "np", "title": "Entraînement · question 2", "src": "Wilcoxon apparié (antiride, glycémie, dépression…)", "stem": "On mesure la fréquence cardiaque de 9 sujets avant et après une séance de relaxation.\n <div class=\"tw\"><table><tr><th>Avant</th><td>82</td><td>75</td><td>90</td><td>68</td><td>77</td><td>85</td><td>72</td><td>80</td><td>88</td></tr>\n <tr><th>Après</th><td>76</td><td>76</td><td>81</td><td>66</td><td>70</td><td>79</td><td>72</td><td>74</td><td>80</td></tr></table></div>", "props": ["Il s'agit de données appariées.", "On effectue un test de Mann-Whitney.", "Le test se fait avec N = 9 différences.", "Au risque de 5 %, la relaxation a un effet significatif sur la fréquence cardiaque.", "Au risque de 1 %, la relaxation a un effet significatif sur la fréquence cardiaque."], "ok": [0, 3], "steps": ["Choix du test : mêmes sujets mesurés avant et après → données appariées, n ≤ 20 → Wilcoxon.", "Différences avant − après :<span class=\"calc\">6 · −1 · 9 · 2 · 7 · 6 · 0 · 6 · 8</span>On omet la différence nulle → N = 8.", "Classer les valeurs absolues et attribuer les rangs (rang moyen si ex-aequo) :<div class=\"tw\"><table><tr><th>|d|</th><td>1</td><td>2</td><td>6</td><td>6</td><td>6</td><td>7</td><td>8</td><td>9</td></tr><tr><th>Signe</th><td>−</td><td>+</td><td>+</td><td>+</td><td>+</td><td>+</td><td>+</td><td>+</td></tr><tr><th>Rang</th><td>1</td><td>2</td><td>4</td><td>4</td><td>4</td><td>6</td><td>7</td><td>8</td></tr></table></div>Les trois « 6 » occupent les rangs 3, 4 et 5 → rang moyen 4.", "Sommes des rangs :<span class=\"calc\">w₋ = 1 &nbsp;&nbsp; w₊ = 2 + 4 + 4 + 4 + 6 + 7 + 8 = 35</span>Vérification : 1 + 35 = 36 = 8 × 9 / 2 ✓", "w = min(1 ; 35) = 1. Table de Wilcoxon pour n = 8 : 3 à 5 % et 0 à 1 %.<span class=\"calc\">1 ≤ 3 → rejet de H₀ à 5 % ; 1 > 0 → pas de rejet à 1 %</span>"], "why": ["Vrai : mêmes sujets avant/après.", "Faux : Mann-Whitney concerne des groupes indépendants.", "Faux : la différence nulle est retirée, N = 8.", "Vrai : w = 1 ≤ 3.", "Faux : w = 1 > 0."], "tip": "Oublier la différence nulle te ferait lire la ligne n = 9 de la table (seuil 5) : la conclusion à 1 % pourrait changer."}, {"id": "E03", "set": "E", "num": 3, "k": "np", "title": "Entraînement · question 3", "src": "Choisir le bon test", "stem": "Indique les propositions exactes concernant le choix et l'interprétation des tests.", "props": ["Comparer la glycémie de 12 patients avant et après un traitement (normalité inconnue) relève d'un test de Wilcoxon.", "Comparer la taille de 40 garçons et de 45 filles impose un test de Mann-Whitney.", "Comparer le VEMS de 10 fumeurs et de 12 non-fumeurs (normalité inconnue) relève d'un test de Wilcoxon.", "Avec Mann-Whitney, si u > m<sub>α</sub>, on ne peut pas rejeter H₀.", "Si le test n'est pas significatif, on peut affirmer que les deux groupes sont identiques."], "ok": [0, 3], "steps": ["Première question à se poser : mêmes sujets (appariés) ou groupes différents (indépendants) ?<span class=\"calc\">appariés → Wilcoxon &nbsp;&nbsp; indépendants → Mann-Whitney</span>", "Deuxième question : effectif ≥ 30 ou échantillon normal ? Si oui, un test paramétrique est possible (formulaire). Les tables non paramétriques s'arrêtent d'ailleurs à n = 20.", "Règle de décision : rejet de H₀ si u ≤ m<sub>α</sub> (Mann-Whitney) ou w ≤ w<sub>α</sub> (Wilcoxon). Donc u > m<sub>α</sub> → on garde H₀.", "Ne pas rejeter H₀ ≠ démontrer H₀ : on dit « on ne peut pas conclure à une différence »."], "why": ["Vrai : avant/après sur les mêmes patients, petit effectif.", "Faux : n ≥ 30 dans chaque groupe → test paramétrique de comparaison de moyennes possible.", "Faux : groupes indépendants → Mann-Whitney.", "Vrai : on ne rejette que si u ≤ m<sub>α</sub>.", "Faux : on n'affirme jamais l'égalité."], "tip": "La proposition E revient presque chaque année sous la forme « on peut affirmer que… sont égaux » : toujours fausse."}, {"id": "E04", "set": "E", "num": 4, "k": "moy", "title": "Entraînement · question 4", "src": "Comme anticorps 49/49, métabolisme 36/36, IMC 200/200", "stem": "Deux groupes de 64 patients tirés au sort reçoivent le traitement A ou B. Cholestérolémie après 3 mois : groupe A, moyenne 2,10 g/L, variance 0,16 ; groupe B, moyenne 1,95 g/L, variance 0,20.", "props": ["On peut effectuer un test paramétrique de comparaison de moyennes.", "On effectue un test du χ².", "Au risque de 5 %, il y a une différence significative entre A et B.", "Au risque de 1 %, il y a une différence significative entre A et B.", "Aucun test n'est possible car la normalité n'est pas précisée."], "ok": [0, 2], "steps": ["Choix du test : variable quantitative, deux groupes indépendants, n = 64 ≥ 30 → test paramétrique de comparaison de deux moyennes, sans besoin de normalité.", "Formule (formulaire, échantillons indépendants) :<span class=\"calc\">v = (m₁ − m₂) / √(s₁²/n₁ + s₂²/n₂)</span>", "Dénominateur (on te donne déjà des variances, pas de carré à faire) :<span class=\"calc\">0,16/64 + 0,20/64 = 0,36/64 = 0,005 625 → √ = 0,075</span>", "Valeur du test :<span class=\"calc\">v = (2,10 − 1,95) / 0,075 = 0,15 / 0,075 = 2,0</span>", "Décision :<span class=\"calc\">|v| = 2,0 > 1,96 → rejet de H₀ à 5 % &nbsp;&nbsp; |v| = 2,0 < 2,576 → pas de rejet à 1 %</span>"], "why": ["Vrai : n ≥ 30.", "Faux : le χ² compare des effectifs de variables qualitatives, ici on compare des moyennes.", "Vrai : 2,0 > 1,96.", "Faux : 2,0 < 2,576.", "Faux : n ≥ 30 suffit."], "tip": "Variance donnée → on l'utilise telle quelle. Écart-type donné → on l'élève au carré avant de diviser par n."}, {"id": "E05", "set": "E", "num": 5, "k": "chi", "title": "Entraînement · question 5", "src": "Comme vaccin grippe, pommades, guérisons 75/65", "stem": "On suit 100 personnes vaccinées et 100 non vaccinées. 10 vaccinés et 25 non vaccinés tombent malades.", "props": ["On peut effectuer un test du χ².", "Le χ² se lit avec 2 degrés de liberté.", "Au risque de 5 %, le vaccin a une efficacité significative.", "Au risque de 1 %, le vaccin a une efficacité significative.", "Le risque est divisé par 2,5, donc le vaccin est forcément efficace dans toute population."], "ok": [0, 2, 3], "steps": ["Tableau observé :<div class=\"tw\"><table><tr><th></th><th>Malades</th><th>Non malades</th><th>Total</th></tr><tr><th>Vaccinés</th><td>10</td><td>90</td><td>100</td></tr><tr><th>Non vaccinés</th><td>25</td><td>75</td><td>100</td></tr><tr><th>Total</th><td>35</td><td>165</td><td>200</td></tr></table></div>", "Effectifs théoriques = total ligne × total colonne / total :<span class=\"calc\">100 × 35 / 200 = 17,5 malades &nbsp;&nbsp; 100 × 165 / 200 = 82,5 non malades (dans chaque ligne)</span>Tous ≥ 5 → χ² applicable.", "Écarts observé − théorique : ±7,5 dans chaque case.<span class=\"calc\">χ² = 7,5²/17,5 + 7,5²/82,5 + 7,5²/17,5 + 7,5²/82,5 = 3,21 + 0,68 + 3,21 + 0,68 ≈ 7,79</span>", "Degrés de liberté :<span class=\"calc\">ddl = (2 − 1) × (2 − 1) = 1</span>", "Lecture de la table à 1 ddl :<span class=\"calc\">7,79 > 3,84 (5 %) et 7,79 > 6,63 (1 %)</span>"], "why": ["Vrai : effectifs théoriques ≥ 5.", "Faux : un tableau 2×2 a 1 ddl.", "Vrai : 7,79 > 3,84.", "Vrai : 7,79 > 6,63.", "Faux : un résultat d'échantillon ne se généralise pas « forcément » à toute population."], "tip": "Vérification possible par la comparaison de deux proportions : v ≈ 2,79 et v² ≈ 7,79."}, {"id": "E06", "set": "E", "num": 6, "k": "chi", "title": "Entraînement · question 6", "src": "Comme sexe/boisson (2×3) et PAS A/B (3 classes)", "stem": "On interroge 100 urbains et 100 ruraux sur leur moyen de transport principal.\n <div class=\"tw\"><table><tr><th></th><th>Voiture</th><th>Vélo</th><th>Transports</th></tr>\n <tr><th>Urbains</th><td>30</td><td>30</td><td>40</td></tr><tr><th>Ruraux</th><td>60</td><td>20</td><td>20</td></tr></table></div>", "props": ["Le test du χ² a 2 degrés de liberté.", "Le χ² est impossible car il y a plus de deux modalités.", "Au risque de 5 %, le lieu de vie influe sur le moyen de transport.", "Au risque de 1 %, le lieu de vie influe sur le moyen de transport.", "L'effectif théorique de la case « urbains / voiture » est 30."], "ok": [0, 2, 3], "steps": ["Totaux par colonne : voiture 90, vélo 50, transports 60 ; total général 200.", "Effectifs théoriques = total ligne × total colonne / 200 :<span class=\"calc\">voiture : 100 × 90 / 200 = 45 &nbsp; vélo : 25 &nbsp; transports : 30 (identiques pour les deux lignes)</span>", "Écarts observé − théorique :<span class=\"calc\">urbains : −15, +5, +10 &nbsp;&nbsp; ruraux : +15, −5, −10</span>", "Calcul :<span class=\"calc\">χ² = 2 × (15²/45 + 5²/25 + 10²/30) = 2 × (5 + 1 + 3,33) ≈ 18,7</span>", "ddl = (2 − 1) × (3 − 1) = 2. Table : 5,99 (5 %) et 9,21 (1 %).<span class=\"calc\">18,7 > 9,21 → significatif à 5 % et à 1 %</span>"], "why": ["Vrai : (2 − 1)(3 − 1) = 2.", "Faux : le χ² s'applique à tout tableau à l lignes et c colonnes.", "Vrai : 18,7 > 5,99.", "Vrai : 18,7 > 9,21.", "Faux : 30 est l'observé ; le théorique est 45."], "tip": "Dans une même colonne, les écarts sont opposés (−15 / +15). Si ce n'est pas le cas, un théorique est faux."}, {"id": "E07", "set": "E", "num": 7, "k": "int", "title": "Entraînement · question 7", "src": "Comme IgG 64 patients, IMC 100 individus, oreillons 48 enfants", "stem": "Dans la population générale, la glycémie à jeun suit une loi normale de moyenne 1,00 g/L et d'écart-type 0,20 g/L. On tire au sort 100 personnes et on s'intéresse à la moyenne de l'échantillon.", "props": ["On calcule un intervalle de pari.", "On calcule un intervalle de confiance.", "Au risque de 5 %, la moyenne de l'échantillon sera dans [0,96 ; 1,04].", "Au risque de 5 %, la moyenne de l'échantillon sera dans [0,61 ; 1,39].", "À 99 %, l'intervalle serait plus étroit."], "ok": [0, 2], "steps": ["On connaît la population (μ = 1,00 ; σ = 0,20) et on prédit ce que donnera l'échantillon → intervalle de pari.", "Écart-type de la moyenne d'échantillon :<span class=\"calc\">σ / √n = 0,20 / √100 = 0,02</span>", "Intervalle de pari à 95 % :<span class=\"calc\">1,00 ± 1,96 × 0,02 = 1,00 ± 0,039 → [0,961 ; 1,039]</span>", "À 99 %, u = 2,576 > 1,96 → intervalle plus large."], "why": ["Vrai : population connue → pari.", "Faux : la confiance sert à estimer un paramètre inconnu à partir d'un échantillon.", "Vrai : [0,96 ; 1,04].", "Faux : 1,00 ± 1,96 × 0,20 est l'intervalle pour un individu, sans le √n.", "Faux : plus de confiance → plus large."], "tip": "Question réflexe : je pars de la population (pari) ou de l'échantillon (confiance) ?"}, {"id": "E08", "set": "E", "num": 8, "k": "int", "title": "Entraînement · question 8", "src": "Comme protéine P, temps de réaction, potassium", "stem": "Sur un échantillon aléatoire de 49 patients hypertendus, la pression artérielle systolique moyenne est 132 mmHg, avec un écart-type estimé de 14 mmHg. On note μ la moyenne dans la population des hypertendus.", "props": ["Pour estimer μ, on calcule un intervalle de confiance.", "Un intervalle de confiance de μ à 95 % est environ [128 ; 136].", "La probabilité que μ soit égal à 132 est de 95 %.", "Un intervalle de confiance à 99 % serait plus large.", "95 % des patients ont une PAS comprise dans [128 ; 136]."], "ok": [0, 1, 3], "steps": ["On part de l'échantillon pour estimer le paramètre inconnu μ → intervalle de confiance.", "Erreur standard de la moyenne :<span class=\"calc\">s / √n = 14 / √49 = 14 / 7 = 2</span>", "Intervalle à 95 % (n ≥ 30, u = 1,96) :<span class=\"calc\">132 ± 1,96 × 2 = 132 ± 3,92 → [128,1 ; 135,9]</span>Avec la formule en t du formulaire (t₄₈ ≈ 2,01), on trouve 132 ± 4,0 : même arrondi [128 ; 136].", "À 99 % :<span class=\"calc\">132 ± 2,576 × 2 = 132 ± 5,15 → plus large</span>"], "why": ["Vrai : estimation d'un paramètre de population.", "Vrai : [128,1 ; 135,9].", "Faux : μ est une valeur fixe ; c'est l'intervalle qui varie d'un échantillon à l'autre.", "Vrai : u passe de 1,96 à 2,576.", "Faux : l'IC encadre μ, pas les individus. Pour les individus, ce serait 132 ± 1,96 × 14."], "tip": "C et E sont les deux contresens favoris des QCM d'intervalle."}, {"id": "E09", "set": "E", "num": 9, "k": "int", "title": "Entraînement · question 9", "src": "Comme fer sérique, sclérose en plaques, jambes", "stem": "On veut estimer une prévalence attendue autour de 30 %, avec un intervalle de confiance à 95 % de demi-largeur au plus 5 points.", "props": ["Il faut environ 84 sujets.", "Il faut environ 323 sujets.", "Il faut environ 1291 sujets.", "Pour une précision deux fois meilleure, il faut environ quatre fois plus de sujets.", "Le nombre de sujets ne dépend pas de la prévalence attendue."], "ok": [1, 3], "steps": ["Demi-largeur de l'IC d'une proportion :<span class=\"calc\">e = u × √(p(1 − p) / n)</span>", "Isoler n :<span class=\"calc\">n ≥ u² × p(1 − p) / e²</span>", "Application :<span class=\"calc\">n ≥ 1,96² × 0,30 × 0,70 / 0,05² = 3,8416 × 0,21 / 0,0025 = 0,8067 / 0,0025 ≈ 322,7</span>On arrondit au-dessus → 323.", "Précision deux fois meilleure → e divisé par 2 → e² divisé par 4 → n multiplié par 4."], "why": ["Faux : 84 = 0,21 / 0,0025, on a oublié le facteur 1,96².", "Vrai : 323.", "Faux : 1291 correspond à une demi-largeur de 2,5 points.", "Vrai : la précision varie en 1/√n.", "Faux : p(1 − p) est dans la formule."], "tip": "On arrondit toujours n au-dessus, sinon la précision voulue n'est pas atteinte."}, {"id": "E10", "set": "E", "num": 10, "k": "norm", "title": "Entraînement · question 10", "src": "Comme taille 1m78, récupération 12 j, cantine 117 g", "stem": "Chez les femmes, l'hémoglobine suit une loi normale de moyenne 13,5 g/dL et d'écart-type 1,0 g/dL.", "props": ["Z = (X − 13,5) / 1 suit une loi normale centrée réduite.", "P(X < 12) ≈ 6,7 %.", "P(12,5 < X < 14,5) ≈ 95 %.", "P(X > 15,5) ≈ 5 %.", "Sur 500 femmes, environ 11 ont une hémoglobine supérieure à 15,5 g/dL."], "ok": [0, 1, 4], "steps": ["Centrer-réduire : Z = (X − μ) / σ = (X − 13,5) / 1.", "P(X < 12) :<span class=\"calc\">z = (12 − 13,5) / 1 = −1,5 → 1 − Π(1,5) = 1 − 0,9332 = 0,0668</span>", "P(12,5 < X < 14,5), soit μ ± 1σ :<span class=\"calc\">Π(1) − Π(−1) = 2 × 0,8413 − 1 = 0,6826</span>", "P(X > 15,5) :<span class=\"calc\">z = 2 → 1 − Π(2) = 1 − 0,9772 = 0,0228</span>", "Effectif attendu :<span class=\"calc\">500 × 0,0228 ≈ 11,4</span>"], "why": ["Vrai : (X − μ) / σ.", "Vrai : 6,68 %.", "Faux : ±1σ donne 68 %, pas 95 %.", "Faux : 2,3 % (les 5 % correspondent aux deux queues).", "Vrai : ≈ 11."], "tip": "Au-delà de +2σ d'un seul côté : 2,3 %. ±1,96σ des deux côtés : 5 %."}, {"id": "E11", "set": "E", "num": 11, "k": "norm", "title": "Entraînement · question 11", "src": "Comme sachets 2,40/0,12 et 1,50/0,05", "stem": "La durée de cicatrisation après une intervention suit une loi normale de moyenne 21 jours et d'écart-type 4 jours.", "props": ["La probabilité de cicatriser en plus de 25 jours est d'environ 16 %.", "La probabilité de cicatriser en moins de 15 jours est inférieure à 5 %.", "La probabilité de cicatriser entre 17 et 29 jours est d'environ 82 %.", "Z = (X − 4) / 21 suit une loi normale centrée réduite.", "La médiane de la durée de cicatrisation est 21 jours."], "ok": [0, 2, 4], "steps": ["Centrer-réduire : Z = (X − 21) / 4.", "P(X > 25) :<span class=\"calc\">z = 1 → 1 − 0,8413 = 0,1587</span>", "P(X < 15) :<span class=\"calc\">z = −1,5 → 1 − 0,9332 = 0,0668</span>", "P(17 < X < 29) :<span class=\"calc\">z de −1 à 2 → Π(2) − Π(−1) = 0,9772 − (1 − 0,8413) = 0,9772 − 0,1587 = 0,8185</span>", "La loi normale est symétrique → médiane = moyenne = 21."], "why": ["Vrai : 15,9 %.", "Faux : 6,7 %.", "Vrai : 81,9 %.", "Faux : μ et σ sont inversés.", "Vrai : symétrie."], "tip": "Pour un intervalle asymétrique, calcule les deux bornes séparément : Π(z haut) − Π(z bas)."}, {"id": "E12", "set": "E", "num": 12, "k": "bayes", "title": "Entraînement · question 12", "src": "Comme mammographie A/B/C et dépistage symptomatique", "stem": "Dans un hôpital, 50 % des patients sont en chirurgie, 30 % en médecine et 20 % en réanimation. Le risque d'infection nosocomiale est de 4 % en chirurgie, 5 % en médecine et 15 % en réanimation. Un patient présente une infection.", "props": ["La probabilité globale d'infection nosocomiale est de 6,5 %.", "La probabilité qu'il vienne de réanimation est d'environ 15 %.", "La probabilité qu'il vienne de réanimation est d'environ 46 %.", "La probabilité qu'il vienne de chirurgie est d'environ 31 %.", "Le service et l'infection sont indépendants."], "ok": [0, 2, 3], "steps": ["Intersections P(service ∩ I) = P(service) × P(I | service) :<div class=\"tw\"><table><tr><th>Chirurgie</th><th>Médecine</th><th>Réanimation</th></tr><tr><td>0,5 × 0,04 = 0,020</td><td>0,3 × 0,05 = 0,015</td><td>0,2 × 0,15 = 0,030</td></tr></table></div>", "Probabilités totales :<span class=\"calc\">P(I) = 0,020 + 0,015 + 0,030 = 0,065</span>", "Bayes :<span class=\"calc\">P(Réa | I) = 0,030 / 0,065 ≈ 0,46 &nbsp;&nbsp; P(Chir | I) = 0,020 / 0,065 ≈ 0,31</span>", "Indépendance : P(I | Réa) = 15 % ≠ P(I) = 6,5 % → le service influe sur le risque, ils ne sont pas indépendants."], "why": ["Vrai : 0,065.", "Faux : 15 % est P(I | Réa), pas P(Réa | I).", "Vrai : ≈ 46 %.", "Vrai : ≈ 31 %.", "Faux : P(I | service) varie selon le service."], "tip": "Fais toujours le tableau des intersections avant de diviser."}, {"id": "E13", "set": "E", "num": 13, "k": "bayes", "title": "Entraînement · question 13", "src": "Comme diabète/surpoids et malnutrition/escarres", "stem": "Dans une population, 25 % des sujets sont hypertendus, 8 % sont diabétiques, et 29 % sont hypertendus ou diabétiques.", "props": ["HTA et diabète sont incompatibles.", "La probabilité d'être hypertendu et diabétique est de 4 %.", "HTA et diabète sont indépendants.", "La probabilité d'être diabétique sachant qu'on est hypertendu est de 16 %.", "La probabilité d'être hypertendu sachant qu'on est diabétique est de 50 %."], "ok": [1, 3, 4], "steps": ["Formule de la réunion (formulaire) :<span class=\"calc\">P(H ∪ D) = P(H) + P(D) − P(H ∩ D) → P(H ∩ D) = 0,25 + 0,08 − 0,29 = 0,04</span>", "Incompatibles ⇔ P(H ∩ D) = 0. Ici 0,04 ≠ 0 → non.", "Indépendants ⇔ P(H ∩ D) = P(H) × P(D).<span class=\"calc\">0,25 × 0,08 = 0,02 ≠ 0,04 → non indépendants</span>", "Probabilités conditionnelles :<span class=\"calc\">P(D | H) = 0,04 / 0,25 = 0,16 &nbsp;&nbsp; P(H | D) = 0,04 / 0,08 = 0,50</span>"], "why": ["Faux : l'intersection vaut 4 %, non nulle.", "Vrai : 0,04.", "Faux : 0,04 ≠ 0,02.", "Vrai : 16 %.", "Vrai : 50 %."], "tip": "Incompatibles et indépendants sont deux notions différentes, et deux événements incompatibles de probabilité non nulle ne sont jamais indépendants."}, {"id": "E14", "set": "E", "num": 14, "k": "diag", "title": "Entraînement · question 14", "src": "Comme Se 99 / Sp 98 / prévalence 1 %, angine TDR", "stem": "Un test a une sensibilité de 95 % et une spécificité de 90 %. La prévalence de la maladie est de 2 %.", "props": ["La sensibilité est la probabilité que le test soit positif sachant que le sujet est malade.", "La VPP est d'environ 16 %.", "La VPP est d'environ 95 %.", "Si la prévalence augmente, la sensibilité augmente.", "Si la prévalence augmente, la VPP augmente."], "ok": [0, 1, 4], "steps": ["Tableau sur 10 000 personnes :<div class=\"tw\"><table><tr><th></th><th>Malades (200)</th><th>Sains (9 800)</th><th>Total</th></tr><tr><th>T+</th><td>0,95 × 200 = 190</td><td>0,10 × 9 800 = 980</td><td>1 170</td></tr><tr><th>T−</th><td>10</td><td>0,90 × 9 800 = 8 820</td><td>8 830</td></tr></table></div>", "VPP = vrais positifs / tous les positifs :<span class=\"calc\">190 / 1 170 ≈ 0,162</span>", "VPN = vrais négatifs / tous les négatifs :<span class=\"calc\">8 820 / 8 830 ≈ 0,999</span>", "Se et Sp sont des propriétés du test (calculées dans les colonnes) : elles ne bougent pas avec la prévalence. VPP et VPN sont calculées dans les lignes, donc elles en dépendent."], "why": ["Vrai : Se = P(T+ | M).", "Vrai : ≈ 16 %.", "Faux : 95 % est la sensibilité.", "Faux : Se ne dépend pas de la prévalence.", "Vrai : plus de malades → plus de vrais positifs parmi les positifs."], "tip": "Prévalence faible → beaucoup de faux positifs → VPP basse, même avec un bon test."}, {"id": "E15", "set": "E", "num": 15, "k": "diag", "title": "Entraînement · question 15", "src": "Copie conforme ELISA/LUMINEX ↔ SARS-CoV-2 X/Y", "stem": "On évalue deux tests sur un échantillon non aléatoire de 100 malades et 100 non-malades (gold standard). Test Q : sensibilité 95 %, spécificité 85 %. Test P :\n <div class=\"tw\"><table><tr><th></th><th>Malades</th><th>Non-malades</th></tr><tr><th>P positif</th><td>88</td><td>4</td></tr><tr><th>P négatif</th><td>12</td><td>96</td></tr></table></div>", "props": ["La sensibilité du test P est de 88 %.", "Le test P donne 4 faux négatifs dans l'étude.", "Le test Q détecte mieux les malades que le test P.", "Un test Q positif permet plus sûrement d'affirmer la maladie qu'un test P positif.", "La VPP du test P dans la population peut être calculée sur cet échantillon."], "ok": [0, 2], "steps": ["Sensibilité et spécificité de P (dans les colonnes) :<span class=\"calc\">Se(P) = 88 / 100 = 88 % &nbsp;&nbsp; Sp(P) = 96 / 100 = 96 %</span>", "Faux négatifs = malades testés négatifs = 12. Faux positifs = non-malades testés positifs = 4.", "« Détecte mieux les malades » → sensibilité :<span class=\"calc\">Q (95 %) > P (88 %)</span>", "« Un positif permet plus sûrement d'affirmer » → spécificité (moins de faux positifs) :<span class=\"calc\">P (96 %) > Q (85 %) → c'est P qui est plus sûr</span>", "L'échantillon 100/100 fixe une prévalence artificielle de 50 % → la VPP calculée ici ne vaut pas pour la population."], "why": ["Vrai : 88 / 100.", "Faux : 12 faux négatifs (4 sont des faux positifs).", "Vrai : Se plus élevée.", "Faux : Sp de P plus élevée.", "Faux : échantillon non aléatoire."], "tip": "Sensibilité → détecter. Spécificité → affirmer. Ce QCM est tombé deux fois avec les mêmes chiffres."}, {"id": "E16", "set": "E", "num": 16, "k": "etu", "title": "Entraînement · question 16", "src": "Comme fête d'anniversaire, skate, mésothéliome", "stem": "On recrute 200 patients atteints d'un cancer du poumon et 400 témoins sans cancer. 60 cas et 40 témoins rapportent une exposition professionnelle à l'amiante.", "props": ["Il s'agit d'une étude cas-témoins.", "La force d'association calculée est le risque relatif.", "OR = (60 × 360) / (140 × 40) ≈ 3,9.", "OR = (60/200) / (40/400) = 3.", "Si l'IC à 95 % de l'OR est [2,5 ; 5,9], l'association est significative."], "ok": [0, 2, 4], "steps": ["Type d'étude : recrutement sur la maladie → cas-témoins → mesure d'association = OR (pas d'incidence, donc pas de RR).", "Tableau de contingence :<div class=\"tw\"><table><tr><th></th><th>Cas</th><th>Témoins</th></tr><tr><th>Exposés</th><td>a = 60</td><td>b = 40</td></tr><tr><th>Non exposés</th><td>c = 200 − 60 = 140</td><td>d = 400 − 40 = 360</td></tr></table></div>", "Odds ratio :<span class=\"calc\">OR = (a × d) / (b × c) = (60 × 360) / (40 × 140) = 21 600 / 5 600 ≈ 3,86</span>", "IC [2,5 ; 5,9] n'inclut pas 1 → association significative."], "why": ["Vrai : recrutement sur la maladie.", "Faux : c'est l'OR.", "Vrai : ≈ 3,86.", "Faux : c'est le rapport des proportions d'exposés (30 % / 10 %), pas l'OR.", "Vrai : IC sans 1."], "tip": "OR = produit en croix (a × d) / (b × c). Construis toujours le tableau avant."}, {"id": "E17", "set": "E", "num": 17, "k": "etu", "title": "Entraînement · question 17", "src": "Comme cohorte cannabis Tahiti, Alzheimer Gironde", "stem": "On suit pendant 10 ans 1000 travailleurs de nuit et 2000 travailleurs de jour, tous normotendus à l'inclusion. 150 et 200 deviennent hypertendus. RR = 1,5 ; IC 95 % [1,2 ; 1,9].", "props": ["C'est une étude de cohorte prospective.", "Le RR vaut (150/1000) / (200/2000) = 1,5.", "On peut calculer l'incidence de l'HTA dans chaque groupe.", "L'IC excluant 1, le travail de nuit est une cause d'HTA.", "Ce type d'étude est le plus adapté aux maladies rares."], "ok": [0, 1, 2], "steps": ["Type d'étude : recrutement sur l'exposition (nuit / jour), sujets indemnes, suivi dans le temps → cohorte prospective.", "Incidences cumulées sur 10 ans :<span class=\"calc\">nuit : 150 / 1000 = 15 % &nbsp;&nbsp; jour : 200 / 2000 = 10 %</span>", "Risque relatif :<span class=\"calc\">RR = 0,15 / 0,10 = 1,5</span>", "IC [1,2 ; 1,9] exclut 1 → association significative. Pour parler de cause, il faut discuter les critères de causalité (temporalité, dose-réponse, plausibilité, cohérence entre études…)."], "why": ["Vrai : exposition puis suivi.", "Vrai : 15 % / 10 %.", "Vrai : la cohorte mesure des incidences.", "Faux : association significative ≠ causalité.", "Faux : pour les maladies rares, on préfère le cas-témoins."], "tip": "« Significatif » n'est jamais synonyme de « cause »."}, {"id": "E18", "set": "E", "num": 18, "k": "etu", "title": "Entraînement · question 18", "src": "IC qui contient 1 : hydroxychloroquine, légumes/AVC, filet de bœuf", "stem": "Une étude analytique sur échantillon représentatif donne OR = 1,8 ; IC 95 % [0,9 ; 3,6].", "props": ["L'association est significative au risque de 5 %.", "L'IC contient 1, donc l'association n'est pas significative.", "Le facteur étudié est probablement protecteur.", "Avec un effectif plus grand, l'IC serait plus étroit.", "Un OR de 1,8 prouve que le facteur est un facteur de risque."], "ok": [1, 3], "steps": ["Lire l'IC avant l'OR : [0,9 ; 3,6] contient 1 (absence d'effet) → non significatif au risque de 5 %.", "Sens de l'OR : > 1 irait vers un facteur de risque, < 1 vers un facteur protecteur. Ici rien n'est démontré.", "La largeur de l'IC dépend de la taille de l'échantillon : plus de sujets → IC plus étroit (et peut-être significatif)."], "why": ["Faux : l'IC contient 1.", "Vrai.", "Faux : OR > 1, et de toute façon non significatif.", "Vrai : la précision augmente avec n.", "Faux : rien n'est prouvé quand l'IC contient 1."], "tip": "Regarde l'IC avant l'OR, à chaque fois."}, {"id": "E19", "set": "E", "num": 19, "k": "etu", "title": "Entraînement · question 19", "src": "Comme café/prématurité", "stem": "On recrute 150 enfants asthmatiques et 300 enfants non asthmatiques du même hôpital, puis on interroge les parents sur l'exposition au tabac à la maison.", "props": ["Les enfants asthmatiques sont les cas.", "Le tabagisme passif est l'exposition étudiée.", "Les enfants non exposés au tabac sont les témoins.", "Il s'agit d'une étude de cohorte rétrospective.", "Cette étude est exposée à un biais de mémorisation."], "ok": [0, 1, 4], "steps": ["Sur quoi recrute-t-on ? Sur la maladie (asthmatiques / non asthmatiques) → cas-témoins.", "Cas = malades (asthmatiques). Témoins = non-malades (non asthmatiques), quelle que soit leur exposition.", "Exposition = tabagisme passif, recueillie a posteriori par interrogatoire.", "Recueil rétrospectif → biais de mémorisation (biais d'information) : les parents d'un enfant malade peuvent se souvenir différemment de l'exposition."], "why": ["Vrai.", "Vrai.", "Faux : témoins = non-malades, pas non-exposés.", "Faux : on recrute sur la maladie, pas sur l'exposition.", "Vrai : recueil rétrospectif."], "tip": "Cas / témoins = axe maladie. Exposés / non exposés = autre axe du tableau."}, {"id": "E20", "set": "E", "num": 20, "k": "desc", "title": "Entraînement · question 20", "src": "Comme dengue 2019, VIH OMS, Zika", "stem": "Sur une île de 50 000 habitants en 2024 : 1000 nouveaux cas de dengue, 8 décès dus à la dengue, 300 décès toutes causes.", "props": ["Le taux brut de mortalité est de 6 pour 1000.", "Le taux de mortalité spécifique de la dengue est de 8/1000.", "La létalité de la dengue est de 0,8 %.", "L'incidence cumulée de la dengue en 2024 est de 2 %.", "La prévalence correspond au nombre de nouveaux cas sur la période."], "ok": [0, 2, 3], "steps": ["Repérer les dénominateurs : mortalité → population ; létalité → malades ; incidence → population à risque.", "Mortalité brute :<span class=\"calc\">300 / 50 000 = 0,006 = 6 ‰</span>", "Mortalité spécifique dengue :<span class=\"calc\">8 / 50 000 = 16 / 100 000</span>", "Létalité :<span class=\"calc\">8 / 1000 = 0,8 %</span>", "Incidence cumulée :<span class=\"calc\">1000 / 50 000 = 2 %</span>"], "why": ["Vrai : 6 ‰.", "Faux : 8/1000 est la létalité ; la mortalité spécifique vaut 8/50 000.", "Vrai : 0,8 %.", "Vrai : 2 %.", "Faux : c'est la définition de l'incidence ; la prévalence compte tous les cas présents."], "tip": "Mortalité = population au dénominateur. Létalité = malades au dénominateur."}, {"id": "E21", "set": "E", "num": 21, "k": "desc", "title": "Entraînement · question 21", "src": "Copie quasi conforme 2022-23 ↔ 2025-26 + standardisation 2023-24", "stem": "À propos de l'épidémiologie descriptive et de la comparaison de taux entre pays.", "props": ["Comparer les taux bruts de mortalité de deux pays d'âges très différents suffit.", "On peut calculer des taux standardisés sur l'âge à partir d'une population de référence.", "Si un pays a une population plus âgée que la population de référence, son taux standardisé sur l'âge sera plus faible que son taux brut.", "Un taux d'attaque est un taux d'incidence sur une courte période.", "L'épidémiologie descriptive permet d'analyser les déterminants d'un problème de santé."], "ok": [1, 2, 3], "steps": ["Le taux brut dépend de la structure d'âge : un pays âgé a mécaniquement plus de décès → comparaison biaisée.", "Standardisation directe : on applique les taux par âge de chaque pays à une même population de référence, puis on compare les taux obtenus.", "Un pays plus âgé que la référence a un taux brut « gonflé » par ses classes âgées → une fois ramené à la structure de référence, son taux standardisé baisse.", "Taux d'attaque = taux d'incidence sur une période courte (épidémie, TIAC).", "Descriptive = répartition (temps, lieu, personnes). Analyse des déterminants = épidémiologie analytique."], "why": ["Faux : il faut standardiser.", "Vrai.", "Vrai.", "Vrai.", "Faux : c'est le rôle de l'épidémiologie analytique."], "tip": "La proposition E est reprise mot pour mot d'un sujet à l'autre, et elle est fausse."}, {"id": "E22", "set": "E", "num": 22, "k": "sdesc", "title": "Entraînement · question 22", "src": "Nouveau en 2025-26 (appendicectomie, âges)", "stem": "Durée de séjour (jours) de 12 patients : 3 ; 7 ; 5 ; 9 ; 4 ; 8 ; 6 ; 5 ; 10 ; 7 ; 5 ; 3.", "props": ["La moyenne est de 6 jours.", "La médiane est de 6 jours.", "La médiane est inférieure à la moyenne.", "Le premier quartile est 4.", "L'étendue est de 10."], "ok": [0, 2, 3], "steps": ["Trier :<span class=\"calc\">3 · 3 · 4 · 5 · 5 · 5 · 6 · 7 · 7 · 8 · 9 · 10</span>", "Moyenne :<span class=\"calc\">(3 + 3 + 4 + 5 + 5 + 5 + 6 + 7 + 7 + 8 + 9 + 10) / 12 = 72 / 12 = 6</span>", "Médiane : n = 12 pair → moyenne des 6<sup>e</sup> et 7<sup>e</sup> valeurs.<span class=\"calc\">(5 + 6) / 2 = 5,5</span>", "Quartiles (définition du formulaire) :<span class=\"calc\">Q1 : 12/4 = 3 → 3<sup>e</sup> valeur = 4 &nbsp;&nbsp; Q3 : 3 × 12/4 = 9 → 9<sup>e</sup> valeur = 7</span>", "Étendue :<span class=\"calc\">10 − 3 = 7</span>"], "why": ["Vrai : 72 / 12.", "Faux : 5,5.", "Vrai : 5,5 < 6.", "Vrai : 3<sup>e</sup> valeur.", "Faux : 7 (max − min)."], "tip": "Trier d'abord. n pair → médiane = moyenne des deux valeurs centrales."}, {"id": "E23", "set": "E", "num": 23, "k": "inf", "title": "Entraînement · question 23", "src": "Pathologies émergentes, réservoir, surveillance", "stem": "À propos de l'épidémiologie des maladies infectieuses.", "props": ["Le R0 est le nombre moyen de cas secondaires générés par un cas dans une population entièrement réceptive.", "Un réservoir peut être environnemental.", "L'homme est une impasse épidémiologique pour la leptospirose.", "La transmission par un vecteur est une transmission directe.", "La déclaration obligatoire est un système de surveillance active."], "ok": [0, 1, 2], "steps": ["R0 : nombre moyen de cas secondaires produits par un cas dans une population entièrement réceptive. R0 > 1 → l'épidémie progresse.", "Réservoir : humain, animal ou environnemental (sol, eau).", "Leptospirose : zoonose dont le réservoir est animal (rongeurs). L'homme se contamine par l'eau ou les sols souillés et ne la transmet pas → impasse.", "Transmission directe : contact, gouttelettes, sexuelle… Transmission indirecte : par un vecteur (moustique) ou un véhicule (eau, aliments, objets).", "Surveillance passive : on attend les déclarations des professionnels (déclaration obligatoire). Surveillance active : on va chercher les cas."], "why": ["Vrai.", "Vrai : sol, eau.", "Vrai : pas de transmission interhumaine.", "Faux : vecteur → indirecte.", "Faux : surveillance passive."], "tip": "« Le R0 représente la capacité à se multiplier dans un même organisme » : faux, déjà tombé deux fois."}, {"id": "E24", "set": "E", "num": 24, "k": "essai", "title": "Entraînement · question 24", "src": "Essai ciguatéra (repris à l'identique 2023-24 ↔ 2025-26)", "stem": "On réalise un essai randomisé comparant un nouvel antihypertenseur au traitement de référence. Critère principal : survenue d'un AVC à 3 ans.", "props": ["La randomisation répartit de façon équilibrée les facteurs de confusion connus et inconnus.", "Le double aveugle limite les biais de mesure.", "Il s'agit d'une étude observationnelle.", "Un hazard ratio (nouveau vs référence) de 0,75, IC 95 % [0,60 ; 0,94], indique un bénéfice significatif du nouveau traitement.", "Un critère de jugement secondaire suffit à conclure à l'efficacité."], "ok": [0, 1, 3], "steps": ["Randomisation : le tirage au sort rend les groupes comparables pour les facteurs connus et inconnus → contrôle de la confusion.", "Double aveugle : ni le patient ni l'évaluateur ne connaissent le traitement → limite les biais de mesure (d'évaluation).", "L'investigateur attribue le traitement → étude expérimentale (évaluative), et non observationnelle.", "HR = 0,75 < 1 avec IC [0,60 ; 0,94] excluant 1 → 25 % d'AVC en moins sous nouveau traitement, de façon significative.", "La conclusion repose sur le critère principal, fixé à l'avance. Les critères secondaires sont exploratoires."], "why": ["Vrai.", "Vrai.", "Faux : étude expérimentale.", "Vrai : HR < 1, IC sans 1.", "Faux : on conclut sur le critère principal."], "tip": "Dans le QCM ciguatéra, « HR significativement supérieur à 1 » pour un traitement efficace est faux : le bénéfice donne un HR < 1."}, {"id": "S1-01", "set": "S1", "num": 1, "k": "desc", "title": "Sujet blanc n°1 · QCM1", "src": "", "stem": "Dans une commune de 80 000 habitants au 1<sup>er</sup> janvier 2025, 200 personnes étaient atteintes de tuberculose à cette date. Au cours de l'année 2025, on recense 400 nouveaux cas de tuberculose, 20 décès dus à la tuberculose et 640 décès toutes causes confondues.", "props": ["Le taux brut de mortalité en 2025 est de 8 pour 1000.", "La létalité de la tuberculose est égale à 20 / 80 000.", "Le taux de mortalité spécifique par tuberculose est de 25 pour 100 000.", "L'incidence cumulée de la tuberculose en 2025 est d'environ 5 pour 1000.", "La prévalence de la tuberculose au 1<sup>er</sup> janvier 2025 est égale à 400 / 80 000."], "ok": [0, 2, 3], "steps": ["Repérer les dénominateurs. Mortalité (brute ou spécifique) → la population totale. Létalité → les malades. Incidence → la population à risque. Prévalence → la population à une date donnée.", "Mortalité brute = décès toutes causes / population.<span class=\"calc\">640 / 80 000 = 0,008 = 8 ‰</span>", "Mortalité spécifique tuberculose = décès par tuberculose / population.<span class=\"calc\">20 / 80 000 = 0,000 25 = 25 / 100 000</span>", "Incidence cumulée = nouveaux cas / population à risque. En toute rigueur on retire les 200 malades déjà présents, mais ça ne change rien à l'arrondi.<span class=\"calc\">400 / 80 000 = 5 ‰ &nbsp;&nbsp;(400 / 79 800 = 5,01 ‰)</span>", "Prévalence au 1<sup>er</sup> janvier = cas présents à cette date / population.<span class=\"calc\">200 / 80 000 = 2,5 ‰</span>"], "why": ["Vrai : 640 / 80 000 = 8 ‰.", "Faux : 20 / 80 000 est la mortalité spécifique. La létalité met les malades au dénominateur, pas la population.", "Vrai : 20 / 80 000 = 25 pour 100 000.", "Vrai : 400 / 80 000 ≈ 5 ‰.", "Faux : 400 est le nombre de nouveaux cas (incidence). La prévalence au 1<sup>er</sup> janvier utilise les 200 cas présents."], "tip": "Mortalité = population au dénominateur. Létalité = malades au dénominateur. C'est le piège n°1 de l'épidémio descriptive."}, {"id": "S1-02", "set": "S1", "num": 2, "k": "sdesc", "title": "Sujet blanc n°1 · QCM2", "src": "", "stem": "On relève l'âge (en années) des 9 patients hospitalisés un jour donné dans un service :\n <div class=\"tw\"><table class=\"d\"><tr><td>34</td><td>52</td><td>41</td><td>67</td><td>29</td><td>58</td><td>41</td><td>73</td><td>47</td></tr></table></div>", "props": ["La médiane de cette série est 47.", "La moyenne est supérieure à la médiane.", "Le premier quartile est 34.", "Le troisième quartile est 58.", "L'étendue de la série est 73."], "ok": [0, 1, 3], "steps": ["Toujours commencer par trier la série.<span class=\"calc\">29 · 34 · 41 · 41 · 47 · 52 · 58 · 67 · 73</span>", "Médiane : n = 9 est impair, la médiane est la valeur du milieu, donc la 5<sup>e</sup>.<span class=\"calc\">médiane = 47</span>", "Moyenne : somme des valeurs / n.<span class=\"calc\">29 + 34 + 41 + 41 + 47 + 52 + 58 + 67 + 73 = 442 → 442 / 9 ≈ 49,1</span>", "Premier quartile (définition du formulaire : la valeur qui « contient le premier quart ») : n/4 = 2,25, on arrondit au rang supérieur → 3<sup>e</sup> valeur.<span class=\"calc\">Q1 = 41</span>", "Troisième quartile : 3n/4 = 6,75 → 7<sup>e</sup> valeur.<span class=\"calc\">Q3 = 58</span>", "Étendue = maximum − minimum.<span class=\"calc\">73 − 29 = 44</span>"], "why": ["Vrai : la 5<sup>e</sup> valeur de la série triée est 47.", "Vrai : 49,1 > 47.", "Faux : Q1 est la 3<sup>e</sup> valeur, soit 41. 34 est la 2<sup>e</sup>.", "Vrai : la 7<sup>e</sup> valeur est 58.", "Faux : 73 est le maximum. L'étendue vaut 73 − 29 = 44."], "tip": "Type apparu deux fois en 2025-26. Le réflexe : trier, compter n, puis rang = n/4, n/2, 3n/4 arrondi au-dessus."}, {"id": "S1-03", "set": "S1", "num": 3, "k": "diag", "title": "Sujet blanc n°1 · QCM3", "src": "", "stem": "On dépiste une maladie dont la prévalence est de 5 % dans la population. Le test utilisé a une sensibilité de 80 % et une spécificité de 90 %.", "props": ["La probabilité qu'un test soit positif est de 13,5 %.", "La valeur prédictive positive est d'environ 30 %.", "La valeur prédictive positive est d'environ 80 %.", "La valeur prédictive négative est d'environ 99 %.", "Sur 1000 personnes dépistées, on attend environ 95 faux positifs."], "ok": [0, 1, 3, 4], "steps": ["Construire le tableau sur 1000 personnes (plus rapide et plus sûr que la formule).<div class=\"tw\"><table class=\"d\"><tr><th></th><th>Malades (5 %)</th><th>Sains (95 %)</th><th>Total</th></tr><tr><th>T+</th><td>0,80 × 50 = 40</td><td>0,10 × 950 = 95</td><td>135</td></tr><tr><th>T−</th><td>10</td><td>0,90 × 950 = 855</td><td>865</td></tr><tr><th>Total</th><td>50</td><td>950</td><td>1000</td></tr></table></div>", "P(T+) = total de la ligne T+ / 1000.<span class=\"calc\">135 / 1000 = 13,5 %</span>", "VPP = P(malade | T+) = vrais positifs / tous les positifs.<span class=\"calc\">40 / 135 ≈ 0,296 ≈ 30 %</span>", "VPN = P(sain | T−) = vrais négatifs / tous les négatifs.<span class=\"calc\">855 / 865 ≈ 0,988 ≈ 99 %</span>", "Faux positifs = sains testés positifs = 95."], "why": ["Vrai : 135 / 1000.", "Vrai : 40 / 135 ≈ 29,6 %.", "Faux : 80 % est la sensibilité, P(T+ | malade). La VPP est P(malade | T+).", "Vrai : 855 / 865 ≈ 98,8 %.", "Vrai : 10 % de 950 sains."], "tip": "Prévalence faible → VPP basse même avec un bon test. Si tu trouves une VPP proche de la sensibilité, tu as inversé le conditionnement."}, {"id": "S1-04", "set": "S1", "num": 4, "k": "norm", "title": "Sujet blanc n°1 · QCM4", "src": "", "stem": "Le poids de naissance X des nouveau-nés à terme suit une loi normale de moyenne 3300 g et d'écart-type 450 g.", "props": ["La probabilité qu'un nouveau-né pèse moins de 2500 g est d'environ 3,8 %.", "La probabilité qu'un nouveau-né pèse plus de 4000 g est d'environ 94 %.", "Environ 68 % des nouveau-nés pèsent entre 2850 g et 3750 g.", "Le poids dépassé par 10 % des nouveau-nés est d'environ 3880 g.", "La variable Z = (X − 450) / 3300 suit une loi normale centrée réduite."], "ok": [0, 2, 3], "steps": ["Centrer-réduire : Z = (X − 3300) / 450 suit N(0 ; 1).", "P(X < 2500) :<span class=\"calc\">z = (2500 − 3300) / 450 = −1,78 → Π(−1,78) = 1 − Π(1,78) = 1 − 0,9625 = 0,0375</span>", "P(X > 4000) :<span class=\"calc\">z = (4000 − 3300) / 450 = 1,56 → 1 − Π(1,56) = 1 − 0,9406 = 0,0594 ≈ 6 %</span>", "Entre 2850 et 3750, soit μ ± 1σ :<span class=\"calc\">Π(1) − Π(−1) = 2 × 0,8413 − 1 = 0,6826</span>", "Poids dépassé par 10 % : on cherche t tel que Π(t) = 0,90. Table de la loi normale : Π(1,28) = 0,8997 ; ou table de l'écart absolu, α = 0,20 → 1,2816 (car 10 % de chaque côté).<span class=\"calc\">x = 3300 + 1,2816 × 450 ≈ 3877 g</span>"], "why": ["Vrai : 3,75 %.", "Faux : c'est environ 6 %. 94 % est Π(1,56), la probabilité de peser moins de 4000 g.", "Vrai : ±1σ ≈ 68 %.", "Vrai : ≈ 3877 g.", "Faux : μ et σ sont inversés. Z = (X − 3300) / 450."], "tip": "Pour un seuil « dépassé par p % », utilise la table de l'écart absolu avec α = 2p : ici α = 0,20."}, {"id": "S1-05", "set": "S1", "num": 5, "k": "int", "title": "Sujet blanc n°1 · QCM5", "src": "", "stem": "Pour estimer la couverture vaccinale d'une île, on interroge 400 parents tirés au sort : 280 ont fait vacciner leur enfant. On note p la proportion d'enfants vaccinés dans la population.", "props": ["Pour estimer p, on calcule un intervalle de confiance.", "Un intervalle de confiance de p à 95 % est environ [65,5 % ; 74,5 %].", "À 99 %, l'intervalle de confiance serait plus étroit.", "Les conditions d'application de l'intervalle sont vérifiées.", "Pour diviser par 2 la largeur de l'intervalle, il faudrait interroger 800 parents."], "ok": [0, 1, 3], "steps": ["On part de l'échantillon pour estimer un paramètre de la population → intervalle de confiance (pas de pari).", "Fréquence observée :<span class=\"calc\">f = 280 / 400 = 0,70</span>", "Conditions (formulaire) : np ≥ 5 et n(1 − p) ≥ 5.<span class=\"calc\">400 × 0,70 = 280 ≥ 5 ; 400 × 0,30 = 120 ≥ 5 ✓</span>", "Écart-type de la fréquence :<span class=\"calc\">√(0,70 × 0,30 / 400) = √0,000 525 ≈ 0,0229</span>", "Demi-largeur à 95 % (u = 1,96) :<span class=\"calc\">1,96 × 0,0229 ≈ 0,045 → IC = [0,655 ; 0,745]</span>", "La largeur varie en 1/√n : pour la diviser par 2, il faut multiplier n par 4.<span class=\"calc\">400 × 4 = 1600 parents</span>"], "why": ["Vrai : estimation d'un paramètre à partir d'un échantillon.", "Vrai : [65,5 % ; 74,5 %].", "Faux : plus de confiance → u plus grand (2,576) → intervalle plus large.", "Vrai : 280 et 120 sont ≥ 5.", "Faux : il faut 4 fois plus de sujets, soit 1600."], "tip": "Pari = je connais la population, je prédis l'échantillon. Confiance = je connais l'échantillon, j'estime la population."}, {"id": "S1-06", "set": "S1", "num": 6, "k": "moy", "title": "Sujet blanc n°1 · QCM6", "src": "", "stem": "On compare la durée d'hospitalisation (en jours) sous un nouveau protocole et sous le protocole standard. Deux groupes indépendants de 50 patients sont tirés au sort. Nouveau protocole : moyenne 6,2 j, variance 4,5. Protocole standard : moyenne 7,0 j, variance 8,0.", "props": ["On peut effectuer un test paramétrique de comparaison de moyennes.", "Un test de Mann-Whitney est obligatoire car la normalité n'est pas précisée.", "La valeur du test est v ≈ 1,6.", "Au risque de 5 %, le nouveau protocole réduit significativement la durée d'hospitalisation.", "Au risque de 5 %, on ne peut pas conclure à une différence entre les deux protocoles."], "ok": [0, 2, 4], "steps": ["Choix du test : deux échantillons indépendants, n<sub>1</sub> = n<sub>2</sub> = 50 ≥ 30 → test paramétrique de comparaison de deux moyennes, sans besoin de normalité.", "Formule (échantillons indépendants) :<span class=\"calc\">v = (m<sub>1</sub> − m<sub>2</sub>) / √(s<sub>1</sub>²/n<sub>1</sub> + s<sub>2</sub>²/n<sub>2</sub>)</span>", "Dénominateur (attention, on te donne déjà des variances) :<span class=\"calc\">4,5/50 + 8,0/50 = 12,5/50 = 0,25 → √0,25 = 0,5</span>", "Valeur du test :<span class=\"calc\">v = (7,0 − 6,2) / 0,5 = 0,8 / 0,5 = 1,6</span>", "Décision : |v| = 1,6 < 1,96 → on ne rejette pas H<sub>0</sub> au risque de 5 %."], "why": ["Vrai : n ≥ 30 dans chaque groupe.", "Faux : avec n ≥ 30 le test paramétrique est possible ; Mann-Whitney ne se fait d'ailleurs qu'avec n ≤ 20.", "Vrai : 0,8 / 0,5.", "Faux : 1,6 < 1,96, la différence n'est pas significative.", "Vrai : H<sub>0</sub> n'est pas rejetée. On ne conclut pas, ce qui n'est pas la même chose que dire « les protocoles sont équivalents »."], "tip": "Si l'énoncé donne des écarts-types, élève-les au carré avant de diviser par n. Ici ce sont déjà des variances."}, {"id": "S1-07", "set": "S1", "num": 7, "k": "chi", "title": "Sujet blanc n°1 · QCM7", "src": "", "stem": "On compare la survenue d'effets indésirables sous deux traitements.\n <div class=\"tw\"><table class=\"d\"><tr><th></th><th>Effet indésirable</th><th>Pas d'effet</th><th>Total</th></tr><tr><th>Traitement A</th><td>30</td><td>90</td><td>120</td></tr><tr><th>Traitement B</th><td>10</td><td>70</td><td>80</td></tr></table></div>", "props": ["Les effectifs théoriques sont tous supérieurs ou égaux à 5, le test du χ² est applicable.", "L'effectif théorique de la case « traitement A / effet indésirable » est 30.", "On obtient χ² ≈ 4,7 avec 1 degré de liberté.", "Au risque de 5 %, la fréquence des effets indésirables diffère significativement entre A et B.", "Au risque de 1 %, la fréquence des effets indésirables diffère significativement entre A et B."], "ok": [0, 2, 3], "steps": ["Totaux : 40 effets indésirables sur 200 patients → proportion globale 0,20.", "Effectifs théoriques = total ligne × total colonne / total général.<div class=\"tw\"><table class=\"d\"><tr><th></th><th>EI</th><th>Pas d'EI</th></tr><tr><th>A</th><td>120 × 0,2 = 24</td><td>96</td></tr><tr><th>B</th><td>80 × 0,2 = 16</td><td>64</td></tr></table></div>Tous ≥ 5 ✓", "Écarts observé − théorique : ±6 dans chaque case.<span class=\"calc\">χ² = 36/24 + 36/96 + 36/16 + 36/64 = 1,5 + 0,375 + 2,25 + 0,5625 ≈ 4,69</span>", "Degrés de liberté :<span class=\"calc\">ddl = (2 − 1) × (2 − 1) = 1</span>", "Lecture de la table du χ² à 1 ddl :<span class=\"calc\">3,84 (5 %) &lt; 4,69 &lt; 6,63 (1 %)</span>Significatif à 5 %, pas à 1 %."], "why": ["Vrai : 24, 96, 16, 64.", "Faux : 30 est l'effectif observé, le théorique est 24.", "Vrai : χ² ≈ 4,69 et 1 ddl.", "Vrai : 4,69 > 3,84.", "Faux : 4,69 < 6,63."], "tip": "Vérification possible par la comparaison de deux proportions : v ≈ 2,17 et v² ≈ 4,69, c'est le même test."}, {"id": "S1-08", "set": "S1", "num": 8, "k": "np", "title": "Sujet blanc n°1 · QCM8", "src": "", "stem": "On compare la douleur (échelle de 0 à 10) après deux techniques d'infiltration. Deux groupes de patients sont tirés au sort ; on ne sait rien de la distribution des scores.\n <div class=\"tw\"><table class=\"d\"><tr><th>Technique A</th><td>4</td><td>7</td><td>5</td><td>3</td><td>6</td><td>4</td><td></td></tr><tr><th>Technique B</th><td>8</td><td>6</td><td>9</td><td>7</td><td>10</td><td>8</td><td>11</td></tr></table></div>", "props": ["On effectue un test de Wilcoxon.", "On effectue un test de Mann-Whitney.", "La statistique du test vaut u = 2.", "Au risque de 5 %, la douleur diffère significativement entre les deux techniques.", "Au risque de 1 %, on ne peut pas conclure à une différence entre les deux techniques."], "ok": [1, 2, 3], "steps": ["Choix du test : deux groupes indépendants, n<sub>1</sub> = 6 et n<sub>2</sub> = 7 ≤ 20, normalité inconnue → Mann-Whitney.", "Trier la réunion des deux échantillons :<span class=\"calc\">3A · 4A · 4A · 5A · 6A 6B · 7A 7B · 8B · 8B · 9B · 10B · 11B</span>", "Pour chaque valeur de A, compter les valeurs de B situées après elle (un ex-aequo compte ½) :<div class=\"tw\"><table class=\"d\"><tr><th>Valeur A</th><td>3</td><td>4</td><td>4</td><td>5</td><td>6</td><td>7</td></tr><tr><th>B au-dessus</th><td>7</td><td>7</td><td>7</td><td>7</td><td>6 + ½</td><td>5 + ½</td></tr></table></div><span class=\"calc\">u<sub>1</sub> = 7 + 7 + 7 + 7 + 6,5 + 5,5 = 40</span>", "Recommencer avec B, ou utiliser u<sub>1</sub> + u<sub>2</sub> = n<sub>1</sub> × n<sub>2</sub> :<span class=\"calc\">u<sub>2</sub> = 6 × 7 − 40 = 2 → u = min(40 ; 2) = 2</span>", "Tables de Mann-Whitney pour n<sub>1</sub> = 6, n<sub>2</sub> = 7 : 6 à 5 % et 3 à 1 %.<span class=\"calc\">u = 2 ≤ 6 → rejet de H₀ à 5 % ; u = 2 ≤ 3 → rejet aussi à 1 %</span>"], "why": ["Faux : Wilcoxon est réservé aux données appariées.", "Vrai : groupes indépendants, petits effectifs.", "Vrai : u = min(40 ; 2) = 2.", "Vrai : 2 ≤ 6.", "Faux : 2 ≤ 3, la différence est significative aussi à 1 %."], "tip": "Contrôle anti-erreur : u<sub>1</sub> + u<sub>2</sub> doit toujours valoir n<sub>1</sub> × n<sub>2</sub>. Et on rejette quand u est PETIT (u ≤ valeur de la table)."}, {"id": "S1-09", "set": "S1", "num": 9, "k": "etu", "title": "Sujet blanc n°1 · QCM9", "src": "", "stem": "Pour étudier le lien entre coups de soleil répétés dans l'enfance et mélanome, on recrute 120 patients atteints de mélanome et 240 témoins sans mélanome, appariés sur l'âge. 72 malades et 96 témoins rapportent des coups de soleil répétés dans l'enfance. L'intervalle de confiance à 95 % de la mesure d'association est [1,44 ; 3,52].", "props": ["Il s'agit d'une étude cas-témoins.", "Les témoins sont les sujets n'ayant pas eu de coups de soleil dans l'enfance.", "L'odds ratio vaut 2,25.", "On peut calculer le risque relatif de mélanome chez les sujets exposés.", "L'intervalle de confiance excluant 1, les coups de soleil sont la cause des mélanomes observés."], "ok": [0, 2], "steps": ["Type d'étude : le recrutement se fait sur la maladie (malades vs non-malades), puis on recherche l'exposition dans le passé → cas-témoins → mesure d'association = OR.", "Construire le tableau de contingence :<div class=\"tw\"><table class=\"d\"><tr><th></th><th>Cas (mélanome)</th><th>Témoins</th></tr><tr><th>Exposés</th><td>a = 72</td><td>b = 96</td></tr><tr><th>Non exposés</th><td>c = 120 − 72 = 48</td><td>d = 240 − 96 = 144</td></tr></table></div>", "Odds ratio :<span class=\"calc\">OR = (a × d) / (b × c) = (72 × 144) / (96 × 48) = 10 368 / 4 608 = 2,25</span>", "Interprétation : IC [1,44 ; 3,52] n'inclut pas 1 → association statistiquement significative. Mais association ≠ causalité : il faut discuter les critères de causalité."], "why": ["Vrai : recrutement sur la maladie.", "Faux : les témoins sont les non-malades, quelle que soit leur exposition.", "Vrai : (72 × 144) / (96 × 48) = 2,25.", "Faux : dans un cas-témoins, on fixe le nombre de malades, on ne mesure pas une incidence, donc pas de RR.", "Faux : une association significative ne prouve pas la causalité."], "tip": "Cas / témoins = malades / non-malades. Exposés / non exposés = l'autre axe du tableau. Ne jamais mélanger les deux."}, {"id": "S1-10", "set": "S1", "num": 10, "k": "etu", "title": "Sujet blanc n°1 · QCM10", "src": "", "stem": "À propos des études épidémiologiques et des maladies infectieuses, quelle(s) proposition(s) est (sont) exacte(s) ?", "props": ["Une étude de cohorte permet d'étudier plusieurs maladies liées à une même exposition.", "Les études cas-témoins sont adaptées à l'étude des maladies rares.", "La force de l'association et l'existence d'un effet dose-réponse font partie des critères de causalité.", "La randomisation garantit le double aveugle.", "Le R0 représente la capacité d'un agent pathogène à se multiplier au sein d'un même organisme."], "ok": [0, 1, 2], "steps": ["Cohorte : on part de l'exposition et on suit les sujets → on peut observer plusieurs issues (maladies) chez les mêmes exposés.", "Cas-témoins : on part des malades → on peut réunir assez de cas même si la maladie est rare (dans une cohorte, il faudrait suivre un nombre énorme de sujets).", "Critères de causalité (Bradford Hill) : force de l'association, cohérence entre études (plusieurs études), effet dose-réponse, temporalité, plausibilité biologique, spécificité… Le nombre de témoins n'en fait pas partie.", "Randomisation et aveugle sont deux choses distinctes : la randomisation répartit les facteurs de confusion ; l'aveugle limite les biais de mesure. On peut randomiser en ouvert.", "R0 = nombre moyen de cas secondaires générés par un cas dans une population entièrement réceptive."], "why": ["Vrai : c'est un des avantages de la cohorte.", "Vrai : c'est même son indication principale.", "Vrai : deux critères de Bradford Hill.", "Faux : randomisation ≠ aveugle.", "Faux : le R0 mesure la transmission entre individus, pas la multiplication dans l'organisme."], "tip": "Les propositions D et E reprennent des pièges déjà tombés (« R0… au sein d'un même organisme » en 2023-24 et 2025-26)."}, {"id": "S2-01", "set": "S2", "num": 1, "k": "desc", "title": "Sujet blanc n°2 · QCM1", "src": "", "stem": "Dans les 48 heures qui suivent un repas de mariage réunissant 150 invités, 45 d'entre eux présentent des vomissements et des diarrhées. La commune où a eu lieu le mariage compte 10 000 habitants. Une investigation est lancée.", "props": ["Le taux d'attaque de cette toxi-infection est de 30 %.", "Un taux d'attaque correspond à un taux d'incidence mesuré sur une courte période.", "Le taux d'attaque est égal à 45 / 10 000.", "Une étape descriptive (temps, lieu, personnes) est inutile puisque l'épidémie est terminée.", "Tous les invités étant connus, on peut réaliser une cohorte rétrospective et comparer les taux d'attaque selon les aliments consommés."], "ok": [0, 1, 4], "steps": ["Identifier la population exposée au risque : ce sont les 150 invités, pas la commune. Seuls les invités ont pu manger le repas.", "Taux d'attaque = nouveaux cas / population exposée, sur la courte durée de l'épisode.<span class=\"calc\">45 / 150 = 0,30 = 30 %</span>", "Le taux d'attaque est un cas particulier de taux d'incidence, mesuré sur une période courte (épidémie, TIAC).", "L'investigation commence toujours par une phase descriptive (courbe épidémique, liste des cas, aliments servis), même si l'épidémie est finie : c'est elle qui oriente les hypothèses.", "La population est fermée et entièrement connue → on peut interroger tous les invités, comparer les malades parmi les exposés et les non-exposés à chaque aliment : c'est une cohorte rétrospective. Pour chaque aliment, on calcule un taux d'attaque chez les exposés et chez les non-exposés, puis leur rapport (RR)."], "why": ["Vrai : 45 / 150.", "Vrai : c'est la définition.", "Faux : le dénominateur est la population exposée (150 invités).", "Faux : la phase descriptive est indispensable pour formuler les hypothèses.", "Vrai : population fermée et connue → cohorte rétrospective."], "tip": "Ce scénario est tombé en 2020-21 (mariage) et 2023-24 (fête d'anniversaire). Le dénominateur, ce sont toujours les personnes exposées au repas."}, {"id": "S2-02", "set": "S2", "num": 2, "k": "etu", "title": "Sujet blanc n°2 · QCM2", "src": "", "stem": "On suit pendant 10 ans 2000 fumeurs et 3000 non-fumeurs indemnes de BPCO à l'inclusion. Au cours du suivi, 160 fumeurs et 60 non-fumeurs développent une BPCO. L'intervalle de confiance à 95 % de la mesure d'association est [3,0 ; 5,3].", "props": ["Il s'agit d'une étude de cohorte exposés / non exposés.", "Le risque relatif de BPCO chez les fumeurs est de 4.", "Dans ce type d'étude, seul un odds ratio peut être calculé.", "L'incidence cumulée de la BPCO chez les non-fumeurs sur 10 ans est de 2 %.", "Ce type d'étude n'est pas soumis aux biais."], "ok": [0, 1, 3], "steps": ["Type d'étude : le recrutement se fait sur l'exposition (fumeurs / non-fumeurs), puis on suit l'apparition de la maladie → cohorte.", "Incidence cumulée dans chaque groupe :<span class=\"calc\">fumeurs : 160 / 2000 = 0,08 = 8 % &nbsp;&nbsp; non-fumeurs : 60 / 3000 = 0,02 = 2 %</span>", "Risque relatif = incidence chez les exposés / incidence chez les non-exposés.<span class=\"calc\">RR = 0,08 / 0,02 = 4</span>", "Interprétation : l'IC [3,0 ; 5,3] exclut 1 → association significative. Les fumeurs ont 4 fois plus de risque de développer une BPCO sur 10 ans."], "why": ["Vrai : recrutement sur l'exposition.", "Vrai : 8 % / 2 % = 4.", "Faux : la cohorte mesure des incidences, donc on calcule directement un RR. C'est le cas-témoins qui impose l'OR.", "Vrai : 60 / 3000.", "Faux : les cohortes peuvent avoir des biais (perdus de vue, biais de classement, confusion)."], "tip": "Cohorte → incidences → RR. Cas-témoins → pas d'incidence → OR. La phrase « les cohortes ne sont jamais soumises à des biais » est déjà tombée deux fois, toujours fausse."}, {"id": "S2-03", "set": "S2", "num": 3, "k": "bayes", "title": "Sujet blanc n°2 · QCM3", "src": "", "stem": "Dans une maternité, 60 % des grossesses sont à bas risque, 30 % à risque intermédiaire et 10 % à haut risque. La probabilité d'une césarienne est de 15 % pour une grossesse à bas risque, 25 % à risque intermédiaire et 50 % à haut risque. Une patiente vient d'accoucher par césarienne.", "props": ["La probabilité globale d'accoucher par césarienne est de 21,5 %.", "La probabilité que cette patiente ait eu une grossesse à haut risque est de 50 %.", "La probabilité que cette patiente ait eu une grossesse à haut risque est d'environ 23 %.", "La probabilité que cette patiente ait eu une grossesse à bas risque est d'environ 42 %.", "La probabilité d'avoir une grossesse à haut risque et une césarienne est de 50 %."], "ok": [0, 2, 3], "steps": ["Construire le tableau des intersections P(groupe ∩ césarienne) = P(groupe) × P(césarienne | groupe) :<div class=\"tw\"><table class=\"d\"><tr><th></th><th>Bas</th><th>Intermédiaire</th><th>Haut</th><th>Total</th></tr><tr><th>Césarienne</th><td>0,60 × 0,15 = 0,090</td><td>0,30 × 0,25 = 0,075</td><td>0,10 × 0,50 = 0,050</td><td>0,215</td></tr><tr><th>Groupe</th><td>0,60</td><td>0,30</td><td>0,10</td><td>1</td></tr></table></div>", "Probabilités totales :<span class=\"calc\">P(C) = 0,090 + 0,075 + 0,050 = 0,215</span>", "Bayes, haut risque sachant césarienne :<span class=\"calc\">P(H | C) = P(H ∩ C) / P(C) = 0,050 / 0,215 ≈ 0,233</span>", "Bayes, bas risque sachant césarienne :<span class=\"calc\">P(B | C) = 0,090 / 0,215 ≈ 0,419</span>"], "why": ["Vrai : 0,215.", "Faux : 50 % est P(C | H), la probabilité de césarienne sachant le haut risque. On demande l'inverse.", "Vrai : 0,05 / 0,215 ≈ 23 %.", "Vrai : 0,09 / 0,215 ≈ 42 %.", "Faux : P(H ∩ C) = 0,10 × 0,50 = 5 %."], "tip": "Même si le haut risque a le taux de césarienne le plus élevé, la majorité des césariennes vient du bas risque, parce que ce groupe est beaucoup plus grand. C'est exactement le ressort du QCM mammographie de 2025-26."}, {"id": "S2-04", "set": "S2", "num": 4, "k": "norm", "title": "Sujet blanc n°2 · QCM4", "src": "", "stem": "Dans la population adulte, la pression artérielle systolique X suit une loi normale de moyenne 125 mmHg et d'écart-type 15 mmHg.", "props": ["La probabilité d'avoir une PAS supérieure à 140 mmHg est d'environ 16 %.", "La probabilité d'avoir une PAS supérieure à 155 mmHg est d'environ 5 %.", "La probabilité d'avoir une PAS inférieure à 100 mmHg est d'environ 4,8 %.", "Sur 400 adultes tirés au sort, on s'attend à environ 64 PAS supérieures à 140 mmHg.", "La moitié des adultes ont une PAS supérieure à 140 mmHg."], "ok": [0, 2, 3], "steps": ["Centrer-réduire : Z = (X − 125) / 15 suit N(0 ; 1).", "P(X > 140) :<span class=\"calc\">z = (140 − 125) / 15 = 1 → 1 − Π(1) = 1 − 0,8413 = 0,1587</span>", "P(X > 155) :<span class=\"calc\">z = (155 − 125) / 15 = 2 → 1 − Π(2) = 1 − 0,9772 = 0,0228 ≈ 2,3 %</span>", "P(X < 100) :<span class=\"calc\">z = (100 − 125) / 15 = −1,67 → 1 − Π(1,67) = 1 − 0,9525 = 0,0475</span>", "Effectif attendu sur 400 :<span class=\"calc\">400 × 0,1587 ≈ 63,5 ≈ 64</span>", "La médiane d'une loi normale est égale à sa moyenne : la moitié des adultes est au-dessus de 125, pas de 140."], "why": ["Vrai : 15,9 %.", "Faux : au-delà de +2σ d'un seul côté, c'est 2,3 %. Les 5 % correspondent aux deux queues réunies (±1,96σ).", "Vrai : 4,75 %.", "Vrai : 400 × 0,159 ≈ 64.", "Faux : la moitié est au-dessus de 125 mmHg."], "tip": "Repères à connaître sans table : ±1σ ≈ 68 %, ±2σ ≈ 95 %, une seule queue au-delà de 1σ ≈ 16 %, au-delà de 2σ ≈ 2,3 %."}, {"id": "S2-05", "set": "S2", "num": 5, "k": "int", "title": "Sujet blanc n°2 · QCM5", "src": "", "stem": "Dans la population générale, le HDL-cholestérol suit une loi normale de moyenne 1,40 g/L et d'écart-type 0,30 g/L. On tire au sort 36 personnes et on s'intéresse à la moyenne observée dans cet échantillon.", "props": ["On détermine un intervalle de pari.", "Au risque de 5 %, la moyenne de l'échantillon sera comprise dans [1,30 ; 1,50] (à 0,01 près).", "Au risque de 5 %, la moyenne de l'échantillon sera comprise dans [0,81 ; 1,99].", "Au risque de 1 %, la moyenne de l'échantillon sera comprise dans [1,27 ; 1,53] (à 0,01 près).", "Avec 72 personnes, l'intervalle serait deux fois plus étroit."], "ok": [0, 1, 3], "steps": ["La population est connue (μ = 1,40 ; σ = 0,30) et on prédit ce que donnera l'échantillon → intervalle de pari.", "Écart-type de la moyenne d'échantillon :<span class=\"calc\">σ / √n = 0,30 / √36 = 0,30 / 6 = 0,05</span>", "Intervalle de pari à 95 % (u = 1,96) :<span class=\"calc\">1,40 ± 1,96 × 0,05 = 1,40 ± 0,098 → [1,30 ; 1,50]</span>", "Intervalle de pari à 99 % (u = 2,576, table de l'écart absolu, α = 0,01) :<span class=\"calc\">1,40 ± 2,576 × 0,05 = 1,40 ± 0,129 → [1,27 ; 1,53]</span>", "La largeur varie en 1/√n : diviser la largeur par 2 demande 4 fois plus de sujets.<span class=\"calc\">36 × 4 = 144 personnes</span>"], "why": ["Vrai : population connue → pari.", "Vrai : [1,302 ; 1,498].", "Faux : c'est 1,40 ± 1,96 × 0,30, l'intervalle pour un individu. On a oublié de diviser par √n.", "Vrai : [1,271 ; 1,529].", "Faux : doubler n ne divise la largeur que par √2. Il faut 144 personnes."], "tip": "C'est le même squelette que le QCM IgG de 2025-26 (11,5 ± 2 × 0,4 / √64) et le QCM IMC de 2020-21."}, {"id": "S2-06", "set": "S2", "num": 6, "k": "moy", "title": "Sujet blanc n°2 · QCM6", "src": "", "stem": "Un automate doit délivrer 5,0 mL de solution par flacon. Le volume délivré suit une loi normale d'écart-type connu 0,4 mL. Pour contrôler son réglage, on mesure 25 flacons : volume moyen observé 5,18 mL.", "props": ["On effectue un test paramétrique de comparaison d'une moyenne à une valeur de référence.", "On effectue un test de comparaison de deux moyennes d'échantillons indépendants.", "Aucun test paramétrique n'est possible car n < 30.", "Au risque de 5 %, on peut conclure que l'automate est déréglé.", "Au risque de 1 %, on peut conclure que l'automate est déréglé."], "ok": [0, 3], "steps": ["Choix du test : un seul échantillon comparé à une valeur théorique (5,0 mL) → comparaison d'une moyenne à une valeur μ<sub>0</sub>.", "Conditions (formulaire) : n ≥ 30 OU échantillon normal. Ici la loi est normale → le test est possible malgré n = 25. L'écart-type est connu → on utilise u (loi normale).", "Valeur du test :<span class=\"calc\">v = (x̄ − μ<sub>0</sub>) / (σ / √n) = (5,18 − 5,0) / (0,4 / 5) = 0,18 / 0,08 = 2,25</span>", "Décision à 5 % :<span class=\"calc\">|v| = 2,25 > 1,96 → rejet de H₀</span>", "Décision à 1 % :<span class=\"calc\">|v| = 2,25 < 2,576 → pas de rejet de H₀</span>"], "why": ["Vrai : un échantillon contre une valeur de référence.", "Faux : il n'y a qu'un seul échantillon.", "Faux : la variable est normale, la condition « échantillon normal » du formulaire est remplie.", "Vrai : 2,25 > 1,96.", "Faux : 2,25 < 2,576."], "tip": "Lis la condition du formulaire en entier : « n ≥ 30 OU échantillon normal ». Si l'énoncé dit que la variable suit une loi normale, le petit effectif n'empêche pas le test."}, {"id": "S2-07", "set": "S2", "num": 7, "k": "chi", "title": "Sujet blanc n°2 · QCM7", "src": "", "stem": "On interroge des patients de deux services sur leur satisfaction.\n <div class=\"tw\"><table class=\"d\"><tr><th></th><th>Satisfait</th><th>Neutre</th><th>Insatisfait</th><th>Total</th></tr><tr><th>Service A</th><td>40</td><td>20</td><td>20</td><td>80</td></tr><tr><th>Service B</th><td>80</td><td>25</td><td>15</td><td>120</td></tr></table></div>", "props": ["Le test du χ² se lit avec 2 degrés de liberté.", "L'effectif théorique de la case « service A / satisfait » est 40.", "On obtient χ² ≈ 6,9.", "Au risque de 5 %, la satisfaction dépend significativement du service.", "Au risque de 1 %, la satisfaction dépend significativement du service."], "ok": [0, 2, 3], "steps": ["Totaux par colonne : satisfaits 120, neutres 45, insatisfaits 35, total 200.", "Effectifs théoriques = total ligne × total colonne / 200 :<div class=\"tw\"><table class=\"d\"><tr><th></th><th>Satisfait</th><th>Neutre</th><th>Insatisfait</th></tr><tr><th>A</th><td>80 × 120 / 200 = 48</td><td>80 × 45 / 200 = 18</td><td>80 × 35 / 200 = 14</td></tr><tr><th>B</th><td>72</td><td>27</td><td>21</td></tr></table></div>Tous ≥ 5 ✓", "Contributions (obs − th)² / th :<span class=\"calc\">A : 8²/48 + 2²/18 + 6²/14 = 1,333 + 0,222 + 2,571</span><span class=\"calc\">B : 8²/72 + 2²/27 + 6²/21 = 0,889 + 0,148 + 1,714</span><span class=\"calc\">χ² ≈ 6,88</span>", "Degrés de liberté :<span class=\"calc\">ddl = (2 − 1) × (3 − 1) = 2</span>", "Lecture de la table à 2 ddl :<span class=\"calc\">5,99 (5 %) &lt; 6,88 &lt; 9,21 (1 %)</span>"], "why": ["Vrai : (2 − 1)(3 − 1) = 2.", "Faux : 40 est l'effectif observé, le théorique est 48.", "Vrai : ≈ 6,88.", "Vrai : 6,88 > 5,99.", "Faux : 6,88 < 9,21."], "tip": "Astuce de vérification : dans une même colonne, les écarts obs − th sont opposés (−8 et +8, +2 et −2…). Si ce n'est pas le cas, tu t'es trompé sur un effectif théorique."}, {"id": "S2-08", "set": "S2", "num": 8, "k": "np", "title": "Sujet blanc n°2 · QCM8", "src": "", "stem": "On mesure un score d'anxiété chez 10 patients avant et après une séance de préparation à une intervention.\n <div class=\"tw\"><table class=\"d\"><tr><th>Patient</th><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td><td>10</td></tr><tr><th>Avant</th><td>14</td><td>18</td><td>11</td><td>20</td><td>16</td><td>13</td><td>17</td><td>15</td><td>19</td><td>12</td></tr><tr><th>Après</th><td>10</td><td>15</td><td>11</td><td>14</td><td>17</td><td>9</td><td>13</td><td>12</td><td>14</td><td>13</td></tr></table></div>", "props": ["Les données sont appariées et on effectue un test de Wilcoxon.", "Le test porte sur N = 10 différences.", "La statistique du test vaut w = 3.", "Au risque de 5 %, la séance modifie significativement le score d'anxiété.", "Au risque de 1 %, la séance modifie significativement le score d'anxiété."], "ok": [0, 2, 3], "steps": ["Choix du test : mêmes patients mesurés deux fois, n ≤ 20, normalité inconnue → Wilcoxon.", "Différences avant − après :<span class=\"calc\">4 · 3 · 0 · 6 · −1 · 4 · 4 · 3 · 5 · −1</span>On omet la différence nulle (patient 3) → N = 9.", "Classer les valeurs absolues et attribuer les rangs (rang moyen en cas d'ex-aequo) :<div class=\"tw\"><table class=\"d\"><tr><th>|d|</th><td>1</td><td>1</td><td>3</td><td>3</td><td>4</td><td>4</td><td>4</td><td>5</td><td>6</td></tr><tr><th>Signe</th><td>−</td><td>−</td><td>+</td><td>+</td><td>+</td><td>+</td><td>+</td><td>+</td><td>+</td></tr><tr><th>Rang</th><td>1,5</td><td>1,5</td><td>3,5</td><td>3,5</td><td>6</td><td>6</td><td>6</td><td>8</td><td>9</td></tr></table></div>Les deux « 1 » occupent les rangs 1 et 2 → 1,5 chacun. Les deux « 3 » occupent 3 et 4 → 3,5. Les trois « 4 » occupent 5, 6 et 7 → 6.", "Sommes des rangs :<span class=\"calc\">w₋ = 1,5 + 1,5 = 3 &nbsp;&nbsp; w₊ = 3,5 + 3,5 + 6 + 6 + 6 + 8 + 9 = 42</span>Vérification : 3 + 42 = 45 = 9 × 10 / 2 ✓", "w = min(3 ; 42) = 3. Table de Wilcoxon pour n = 9 : 5 à 5 % et 1 à 1 %.<span class=\"calc\">3 ≤ 5 → rejet de H₀ à 5 % ; 3 > 1 → pas de rejet à 1 %</span>"], "why": ["Vrai : mesures répétées sur les mêmes sujets.", "Faux : la différence nulle est retirée, N = 9.", "Vrai : w = min(3 ; 42).", "Vrai : 3 ≤ 5.", "Faux : 3 > 1."], "tip": "Deux pièges dans le même exercice : la différence nulle à retirer (le N change la ligne de la table) et les ex-aequo à rang moyen. Vérifie toujours w₊ + w₋ = N(N + 1)/2."}, {"id": "S2-09", "set": "S2", "num": 9, "k": "essai", "title": "Sujet blanc n°2 · QCM9", "src": "", "stem": "Un essai randomisé en double aveugle compare un nouvel anticoagulant à la warfarine chez 600 patients en fibrillation atriale. Critère de jugement principal : survenue d'un AVC à 2 ans. Résultat : RR = 0,80 ; IC 95 % [0,62 ; 1,04] ; p = 0,09. Critère secondaire (saignements majeurs) : RR = 0,60 ; IC 95 % [0,42 ; 0,86].", "props": ["Il s'agit d'une étude expérimentale.", "Le nouvel anticoagulant est significativement plus efficace que la warfarine pour prévenir les AVC.", "Le résultat sur les saignements suffit à conclure à la supériorité du nouveau traitement.", "Pour le critère secondaire, la différence observée est statistiquement significative.", "La randomisation a pour but de rendre les deux groupes comparables."], "ok": [0, 3, 4], "steps": ["Type d'étude : l'investigateur attribue le traitement par tirage au sort → étude expérimentale (essai thérapeutique), le plus haut niveau de preuve.", "Critère principal : RR = 0,80 va dans le sens d'un bénéfice, mais l'IC [0,62 ; 1,04] contient 1 et p = 0,09 > 0,05 → pas de différence significative.", "Critère secondaire : IC [0,42 ; 0,86] exclut 1 → différence statistiquement significative.", "Mais la conclusion d'un essai repose sur le critère principal, défini à l'avance. Un critère secondaire significatif est une piste, pas une preuve d'efficacité.", "Randomisation : répartit au hasard les facteurs de confusion connus et inconnus → groupes comparables. Le double aveugle, lui, limite les biais de mesure."], "why": ["Vrai : traitement attribué par tirage au sort.", "Faux : l'IC contient 1 et p > 0,05.", "Faux : on conclut sur le critère principal.", "Vrai : l'IC exclut 1.", "Vrai : c'est son rôle."], "tip": "Même logique que le QCM ciguatéra (2023-24, 2025-26) : un HR ou RR < 1 avec un IC qui exclut 1 = bénéfice. Un critère secondaire seul ne suffit jamais."}, {"id": "S2-10", "set": "S2", "num": 10, "k": "inf", "title": "Sujet blanc n°2 · QCM10", "src": "", "stem": "À propos de la surveillance des maladies infectieuses et du dépistage, quelle(s) proposition(s) est (sont) exacte(s) ?", "props": ["Une zoonose est une maladie transmise naturellement de l'animal à l'homme.", "Un réseau sentinelle repose sur des professionnels de santé volontaires qui signalent les cas.", "Une surveillance exhaustive est surtout adaptée aux pathologies fréquentes.", "Un long délai entre le début de la maladie et l'apparition des symptômes est favorable au dépistage.", "La transmission par gouttelettes et la transmission aérienne nécessitent les mêmes mesures de protection."], "ok": [0, 1, 3], "steps": ["Zoonose : maladie ou infection transmise naturellement de l'animal vertébré à l'homme (leptospirose, rage, grippe aviaire…).", "Réseau sentinelle : échantillon de médecins (et non de patients) volontaires qui déclarent les cas → surveillance non exhaustive, adaptée aux maladies fréquentes (grippe, gastro-entérites).", "Surveillance exhaustive : on cherche à recenser tous les cas → réservée aux maladies rares et/ou graves (maladies à déclaration obligatoire). Pour une maladie fréquente et bénigne, elle est trop lourde : c'est le raisonnement du QCM Zika de 2022-23.", "Dépistage (critères OMS) : maladie fréquente et grave, phase préclinique assez longue pour détecter la maladie avant les symptômes, test simple et acceptable, traitement efficace à un stade précoce.", "Gouttelettes : grosses particules qui retombent vite → masque chirurgical et distance. Transmission aérienne : fines particules qui restent en suspension → masque FFP2, chambre adaptée. Les mesures sont différentes."], "why": ["Vrai : définition de la zoonose.", "Vrai : ce sont des médecins volontaires, pas des patients.", "Faux : l'exhaustif est réservé au rare et/ou grave.", "Vrai : la phase préclinique longue rend le dépistage utile.", "Faux : les mesures diffèrent (masque chirurgical vs FFP2)."], "tip": "Propositions C et E tirées presque mot pour mot des sujets 2021-22 et 2022-23."}];
+const BY_ID = Object.fromEntries(BANK.map(q => [q.id, q]));
+const NOTIONS = {
+  np:{name:"Tests non paramétriques", lvl:"sys", d:"12 sujets sur 12 (13 QCM)"},
+  etu:{name:"Études, OR et RR", lvl:"sys", d:"12 sujets sur 12"},
+  int:{name:"Intervalles (pari / confiance)", lvl:"sys", d:"10 sujets sur 12"},
+  norm:{name:"Loi normale", lvl:"sys", d:"dans chaque sujet depuis la 2e chance 2023-24"},
+  desc:{name:"Épidémio descriptive", lvl:"tf", d:"8 sujets sur 12"},
+  bayes:{name:"Probabilités et Bayes", lvl:"tf", d:"7 sujets sur 12"},
+  inf:{name:"Maladies infectieuses", lvl:"tf", d:"8 sujets sur 12"},
+  chi:{name:"χ² et fréquences", lvl:"up", d:"5 des 6 derniers sujets"},
+  sdesc:{name:"Statistique descriptive", lvl:"up", d:"les 2 sujets 2025-26"},
+  moy:{name:"Comparaison de moyennes", lvl:"reg", d:"5 sujets sur 12"},
+  diag:{name:"Tests diagnostiques", lvl:"reg", d:"4 sujets sur 12"},
+  essai:{name:"Essais et causalité", lvl:"reg", d:"5 sujets sur 12"}
+};
+const LEVELS = {sys:"Systématique", tf:"Très fréquent", up:"↗ En hausse", reg:"Régulier"};
+const WEIGHT = {sys:1, tf:0.85, up:0.85, reg:0.65};
+const ERR_TYPES = ["Calcul","Cours non su","Mauvais test choisi","Lecture de table","Piège de formulation","Inattention"];
+const ANNALES = [
+  ["2020-1","2020-21 · 1ère chance"],["2020-2","2020-21 · 2e chance"],["2021-1","2021-22 · 1ère chance"],["2021-2","2021-22 · 2e chance"],
+  ["2022-1","2022-23 · 1ère chance"],["2022-2","2022-23 · 2e chance"],["2023-1","2023-24 · 1ère chance"],["2023-2","2023-24 · 2e chance"],
+  ["2024-1","2024-25 · 1ère chance"],["2024-2","2024-25 · 2e chance"],["2025-1","2025-26 · 1ère chance"],["2025-2","2025-26 · 2e chance"]
+];
+const ANN_LABEL = Object.fromEntries(ANNALES);
+const L = "ABCDE";
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmtDate = t => new Date(t).toLocaleDateString("fr-FR", {day:"2-digit", month:"2-digit", year:"2-digit"});
+const badge = k => { const n = NOTIONS[k]; return `<span class="trend t-${n.lvl}" title="${esc(n.d)}">${LEVELS[n.lvl]}</span>`; };
+const letters = arr => arr.length ? arr.map(i => L[i]).join(", ") : "rien";
+
+/* ---------------- état et sauvegarde ---------------- */
+const LS_KEY = "carnet-ue14-v1";
+const emptyState = () => ({v:1, attempts:[], carnet:{}, sessions:[], annales:[], settings:{bareme:"disc", custom:[1, 0.5, 0, 0], emptyZero:true}, updated:0});
+const BAREMES = {
+  disc:{label:"Discordances : 1 · 0,5 · 0", v:[1, 0.5, 0, 0], info:"0 discordance = 1 point, 1 discordance = 0,5, 2 ou plus = 0, aucune case cochée = 0. C'est le barème le plus courant des UE santé de LAS."},
+  edn:{label:"EDN : 1 · 0,5 · 0,2 · 0", v:[1, 0.5, 0.2, 0], info:"0 discordance = 1, 1 = 0,5, 2 = 0,2, 3 ou plus = 0. Barème national des épreuves dématérialisées de médecine."},
+  tor:{label:"Tout ou rien", v:[1, 0, 0, 0], info:"1 point seulement si la grille est parfaite."},
+  perso:{label:"Personnalisé", v:null, info:"Règle tes propres valeurs selon les modalités de contrôle de ta fac."}
+};
+function loadLocal(){ try { const r = localStorage.getItem(LS_KEY); return r ? JSON.parse(r) : null; } catch(e){ return null; } }
+function saveLocal(){ try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch(e){} }
+let S = normalize(loadLocal());
+function normalize(x){ const e = emptyState(); if (!x || typeof x !== "object") return e; for (const k in e) if (x[k] === undefined) x[k] = e[k]; for (const k in e.settings) if (x.settings[k] === undefined) x.settings[k] = e.settings[k]; return x; }
+/* ---------------- barème ---------------- */
+const fnum = v => (Math.round(v * 100) / 100).toString().replace(".", ",");
+function scale(){ const st = S.settings, b = BAREMES[st.bareme] || BAREMES.disc; return b.v || st.custom; }
+function pointsFor(g, p){ if ((!p || !p.length) && S.settings.emptyZero) return 0; const d = 5 - g; return scale()[Math.min(d, 3)]; }
+function discLabel(g, p){ if ((!p || !p.length) && S.settings.emptyZero) return "aucune case cochée"; const d = 5 - g; return d === 0 ? "0 discordance" : d + " discordance" + (d > 1 ? "s" : ""); }
+const baremeName = () => (BAREMES[S.settings.bareme] || BAREMES.disc).label;
+const on20 = (pts, n) => n ? fnum(20 * pts / n) : "–";
+
+let remoteRef = null, writing = false, pending = false, wTimer = null;
+function setSync(kind){
+  const el = $("sync");
+  const txt = {local:"Enregistré sur cet appareil", connecting:"Connexion à ton compte…", synced:"Synchronisé sur ton compte", saving:"Enregistrement…", error:"Synchronisation impossible, données gardées sur cet appareil", full:"Stockage du compte plein : exporte puis efface d'anciennes données"}[kind];
+  el.textContent = txt; el.classList.toggle("bad", kind === "error" || kind === "full");
+}
+function save(){ S.updated = Date.now(); saveLocal(); queueRemote(); updateCount(); }
+function queueRemote(){ if (!remoteRef) return; clearTimeout(wTimer); wTimer = setTimeout(flush, 800); }
+async function flush(){
+  if (!remoteRef) return;
+  if (writing){ pending = true; return; }
+  writing = true; setSync("saving");
+  try { await remoteRef.set({state: JSON.stringify(S), updated: S.updated}); setSync("synced"); }
+  catch(e){
+    const c = e && e.code;
+    if (c === "unavailable") setTimeout(queueRemote, 1200 + Math.random() * 1500);
+    else if (c === "quota_exceeded") setSync("full");
+    else setSync("error");
+  }
+  writing = false;
+  if (pending){ pending = false; flush(); }
+}
+async function initRemote(){
+  if (!window.claude || typeof window.claude.use !== "function") return;
+  setSync("connecting");
+  try {
+    const [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+    if (!db || !user){ setSync("local"); return; }
+    const uid = await user.id();
+    if (!uid){ setSync("local"); return; }
+    const ref = db.doc("data/users/" + uid + "/carnet");
+    const snap = await ref.get();
+    remoteRef = ref;
+    let remoteState = null;
+    if (snap.exists){ try { remoteState = JSON.parse(snap.data().state); } catch(e){} }
+    if (remoteState && (remoteState.updated || 0) > (S.updated || 0)){ S = normalize(remoteState); saveLocal(); render(); setSync("synced"); }
+    else if ((S.updated || 0) > ((remoteState && remoteState.updated) || 0)) flush();
+    else setSync("synced");
+  } catch(e){ setSync("local"); }
+}
+
+/* ---------------- enregistrement d'une réponse ---------------- */
+function grade(q, picked){ const ok = new Set(q.ok); let g = 0; for (let i = 0; i < 5; i++) if (picked.has(i) === ok.has(i)) g++; return g; }
+function record(qid, picked){
+  const q = BY_ID[qid], g = grade(q, picked), x = g === 5, now = Date.now(), p = [...picked].sort();
+  S.attempts.push({q:qid, t:now, g, x, p});
+  if (S.attempts.length > 1500) S.attempts.splice(0, S.attempts.length - 1500);
+  let c = S.carnet[qid];
+  if (!x){
+    if (!c) c = S.carnet[qid] = {q:qid, first:now, count:0, types:[], note:"", streak:0};
+    c.count++; c.last = now; c.p = p; c.streak = 0; c.status = "open";
+  } else if (c){
+    c.streak = (c.streak || 0) + 1; c.lastOk = now; c.status = c.streak >= 2 ? "ok" : "progress";
+  }
+  return {g, x};
+}
+
+/* ---------------- statistiques ---------------- */
+function sessionPts(s){ return s.det ? s.det.reduce((a, [g, n]) => a + pointsFor(g, n ? [0] : []), 0) : s.x; }
+function latestByQ(){ const m = {}; for (const a of S.attempts) m[a.q] = a; return m; }
+function notionStats(){
+  const latest = latestByQ(), recentAnn = S.annales.slice(-6), out = {};
+  for (const k in NOTIONS){
+    const qs = BANK.filter(q => q.k === k), done = qs.filter(q => latest[q.id]);
+    const exact = done.filter(q => latest[q.id].x).length;
+    const ptsSum = done.reduce((a, q) => a + pointsFor(latest[q.id].g, latest[q.id].p), 0);
+    const open = Object.values(S.carnet).filter(c => c.status !== "ok" && BY_ID[c.q] && BY_ID[c.q].k === k).length;
+    const ann = recentAnn.filter(a => (a.notions || []).includes(k)).length;
+    const mastery = done.length ? ptsSum / done.length : null;
+    const base = mastery === null ? 0.55 : 1 - mastery;
+    const priority = WEIGHT[NOTIONS[k].lvl] * (base + 0.15 * Math.min(open, 3) + 0.12 * Math.min(ann, 3));
+    out[k] = {k, total:qs.length, done:done.length, exact, open, ann, mastery, priority};
+  }
+  return out;
+}
+function reasonText(st){
+  const parts = [];
+  if (st.mastery === null) parts.push("jamais travaillée");
+  else parts.push(`${Math.round(100 * st.mastery)} % des points sur ${st.done} question${st.done > 1 ? "s" : ""} faite${st.done > 1 ? "s" : ""}`);
+  if (st.open) parts.push(`${st.open} erreur${st.open > 1 ? "s" : ""} à revoir`);
+  if (st.ann) parts.push(`points perdus en annale ${st.ann} fois récemment`);
+  parts.push(LEVELS[NOTIONS[st.k].lvl].replace("↗ ", "").toLowerCase() + " à l'examen");
+  return parts.join(" · ");
+}
+function openCarnet(){ return Object.values(S.carnet).filter(c => c.status !== "ok" && BY_ID[c.q]); }
+function updateCount(){ const n = openCarnet().length, el = $("cnt"); el.hidden = !n; el.textContent = n; }
+function targetedIds(n = 10){
+  const st = Object.values(notionStats()).sort((a, b) => b.priority - a.priority).slice(0, 3).map(s => s.k);
+  const latest = latestByQ(), pool = [];
+  const add = id => { if (!pool.includes(id)) pool.push(id); };
+  openCarnet().filter(c => st.includes(BY_ID[c.q].k)).forEach(c => add(c.q));
+  BANK.filter(q => st.includes(q.k) && !latest[q.id]).forEach(q => add(q.id));
+  BANK.filter(q => st.includes(q.k) && latest[q.id] && !latest[q.id].x).forEach(q => add(q.id));
+  BANK.filter(q => st.includes(q.k)).forEach(q => add(q.id));
+  openCarnet().forEach(c => add(c.q));
+  return shuffle(pool.slice(0, n));
+}
+function shuffle(a){ a = a.slice(); for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+/* ---------------- navigation ---------------- */
+let tab = "dash", run = null, exam = null, carnetFilter = {status:"todo", k:"", type:""};
+document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => go(b.dataset.t));
+function go(t){ tab = t; render(); window.scrollTo({top:0}); }
+function toast(msg){ const t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(t._h); t._h = setTimeout(() => t.hidden = true, 2600); }
+function render(){
+  document.querySelectorAll("#tabs button").forEach(b => b.setAttribute("aria-current", b.dataset.t === tab ? "page" : "false"));
+  updateCount();
+  if (tab === "dash") renderDash();
+  else if (tab === "train") (exam ? renderExam() : run ? renderRun() : renderTrainMenu());
+  else if (tab === "carnet") renderCarnet();
+  else renderAnnales();
+}
+
+/* ---------------- tableau de bord ---------------- */
+function renderDash(){
+  const st = notionStats(), list = Object.values(st).sort((a, b) => b.priority - a.priority);
+  const latest = latestByQ(), doneIds = Object.keys(latest).filter(id => BY_ID[id]);
+  const ptsAll = doneIds.reduce((a, id) => a + pointsFor(latest[id].g, latest[id].p), 0);
+  const lastScore = [...S.sessions.map(s => ({t:s.t, v:sessionPts(s), lbl:"sujet blanc"})), ...S.annales.map(a => ({t:a.ts || Date.parse(a.date), v:10 * a.score / a.sur, lbl:"annale"}))].sort((a, b) => a.t - b.t).pop();
+  const top = list.slice(0, 3);
+  $("main").innerHTML = `
+    <div class="stats">
+      <div class="stat"><b>${doneIds.length}/${BANK.length}</b><span>questions travaillées</span></div>
+      <div class="stat"><b>${doneIds.length ? on20(ptsAll, doneIds.length) + "/20" : "–"}</b><span>moyenne au barème choisi (dernière tentative)</span></div>
+      <div class="stat"><b>${openCarnet().length}</b><span>erreurs à revoir</span></div>
+      <div class="stat"><b>${lastScore ? fnum(2 * lastScore.v) + "/20" : "–"}</b><span>${lastScore ? "dernière note (" + lastScore.lbl + ")" : "aucune note encore"}</span></div>
+    </div>
+    <div class="panel">
+      <h2>Tes 3 priorités</h2>
+      ${doneIds.length || S.annales.length ? "" : `<p class="muted small">Tu n'as encore rien fait : les priorités suivent pour l'instant la fréquence à l'examen. Un sujet blanc te donnera un premier diagnostic.</p>`}
+      <div class="prio">${top.map((s, i) => `<div class="item"><span class="rank">${i + 1}</span><div><b>${NOTIONS[s.k].name} ${badge(s.k)}</b><span class="small muted">${reasonText(s)}</span></div></div>`).join("")}</div>
+      <div class="row" style="margin-top:14px">
+        <button class="btn primary" id="goTarget">S'entraîner sur ces points faibles</button>
+        ${openCarnet().length ? `<button class="btn" id="goCarnet">Refaire mes ${openCarnet().length} erreurs</button>` : ""}
+      </div>
+    </div>
+    <div class="panel">
+      <h2>Maîtrise par notion</h2>
+      <p class="small muted">Classées de la plus urgente à la moins urgente : faiblesse × fréquence à l'examen. La maîtrise est la part des points obtenus au barème « ${esc(baremeName())} ». Clique sur une ligne pour t'entraîner dessus.</p>
+      <div class="tw"><table class="notions">
+        <tr><th>Notion</th><th class="hide-s">Tendance</th><th>Maîtrise</th><th class="hide-s">Faites</th><th>À revoir</th></tr>
+        ${list.map(s => {
+          const pct = s.mastery === null ? null : Math.round(100 * s.mastery);
+          const cls = pct === null ? "" : pct >= 75 ? "" : pct >= 50 ? "mid" : "low";
+          return `<tr class="click" data-k="${s.k}"><td>${NOTIONS[s.k].name}</td><td class="hide-s">${badge(s.k)}</td>
+            <td>${pct === null ? `<span class="small muted">pas encore</span>` : `<div class="bar" title="${pct} %"><i class="${cls}" style="width:${Math.max(pct, 4)}%"></i></div><span class="small">${pct} %</span>`}</td>
+            <td class="hide-s">${s.done}/${s.total}</td><td>${s.open ? `<b style="color:var(--ko)">${s.open}</b>` : "–"}</td></tr>`;
+        }).join("")}
+      </table></div>
+    </div>
+    <div class="panel"><h2>Progression des notes</h2>${chartHTML()}</div>`;
+  $("goTarget").onclick = () => startRun("Points faibles", targetedIds());
+  if ($("goCarnet")) $("goCarnet").onclick = () => startRun("Carnet d'erreurs", shuffle(openCarnet().map(c => c.q)));
+  document.querySelectorAll("tr[data-k]").forEach(tr => tr.onclick = () => startRun(NOTIONS[tr.dataset.k].name, shuffle(BANK.filter(q => q.k === tr.dataset.k).map(q => q.id))));
+}
+
+function chartHTML(){
+  const pts = [
+    ...S.annales.map(a => ({t:a.ts || Date.parse(a.date), v:20 * a.score / a.sur, s:"a", lbl:ANN_LABEL[a.a] || "Annale"})),
+    ...S.sessions.map(s => ({t:s.t, v:2 * sessionPts(s), s:"b", lbl:"Sujet blanc n°" + s.s.slice(1)}))
+  ].filter(p => isFinite(p.t) && isFinite(p.v)).sort((a, b) => a.t - b.t);
+  if (pts.length < 2) return `<div class="empty">Enregistre au moins deux notes (annales dans l'onglet Annales, ou un sujet blanc) pour voir ta courbe.</div>`;
+  const W = 640, H = 220, pl = 34, pr = 12, pt = 12, pb = 28;
+  const t0 = pts[0].t, t1 = pts[pts.length - 1].t, span = Math.max(t1 - t0, 1);
+  const x = t => pl + (W - pl - pr) * (t - t0) / span, y = v => pt + (H - pt - pb) * (1 - v / 20);
+  const grid = [0, 5, 10, 15, 20].map(v => `<line x1="${pl}" x2="${W - pr}" y1="${y(v)}" y2="${y(v)}" stroke="var(--rule)" stroke-width="${v === 10 ? 1.6 : 1}" ${v === 10 ? 'stroke-dasharray="5 4"' : ""}/><text x="${pl - 6}" y="${y(v) + 4}" text-anchor="end" font-size="11" fill="var(--muted)">${v}</text>`).join("");
+  const line = s => { const p = pts.filter(q => q.s === s); return p.length > 1 ? `<polyline fill="none" stroke="${s === "a" ? "var(--pen)" : "var(--ok)"}" stroke-width="2" points="${p.map(q => x(q.t) + "," + y(q.v)).join(" ")}"/>` : ""; };
+  const dots = pts.map(q => `<circle cx="${x(q.t)}" cy="${y(q.v)}" r="4.5" fill="${q.s === "a" ? "var(--pen)" : "var(--ok)"}"><title>${esc(q.lbl)} · ${fmtDate(q.t)} · ${fnum(q.v)}/20</title></circle>`).join("");
+  const xl = `<text x="${pl}" y="${H - 8}" font-size="11" fill="var(--muted)">${fmtDate(t0)}</text><text x="${W - pr}" y="${H - 8}" font-size="11" fill="var(--muted)" text-anchor="end">${fmtDate(t1)}</text>`;
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Notes sur 20 au fil du temps">${grid}${line("a")}${line("b")}${dots}${xl}</svg>
+    <div class="legend"><span><i style="background:var(--pen)"></i>Annales</span><span><i style="background:var(--ok)"></i>Sujets blancs</span><span>Notes sur 20 · ligne pointillée = 10/20 · survole un point pour le détail</span></div>`;
+}
+
+/* ---------------- menu d'entraînement ---------------- */
+function renderTrainMenu(){
+  const st = notionStats(), oc = openCarnet().length;
+  const setCount = s => BANK.filter(q => q.set === s).length;
+  $("main").innerHTML = `
+    ${baremePanel()}
+    <h2>Choisis une séance</h2>
+    <div class="menu">
+      <button class="card hot" id="m-target"><b>Points faibles</b><span>10 questions tirées de tes 3 notions prioritaires, erreurs en premier</span></button>
+      <button class="card" id="m-carnet" ${oc ? "" : "disabled"}><b>Carnet d'erreurs</b><span>${oc ? `${oc} question${oc > 1 ? "s" : ""} à refaire jusqu'à 2 réussites de suite` : "aucune erreur à revoir pour l'instant"}</span></button>
+      <button class="card" id="m-s1"><b>Sujet blanc n°1</b><span>Mode examen : 10 QCM, 30 min, correction à la fin</span></button>
+      <button class="card" id="m-s2"><b>Sujet blanc n°2</b><span>Mode examen : 10 QCM, 30 min, correction à la fin</span></button>
+      <button class="card" id="m-all"><b>Série d'entraînement complète</b><span>${setCount("E")} questions mélangées, correction immédiate</span></button>
+    </div>
+    <h2>Par notion</h2>
+    <div class="chips">${Object.keys(NOTIONS).map(k => `<button class="chip" data-k="${k}">${NOTIONS[k].name} <span class="muted">${st[k].total}</span></button>`).join("")}</div>`;
+  bindBareme();
+  $("m-target").onclick = () => startRun("Points faibles", targetedIds());
+  $("m-carnet").onclick = () => startRun("Carnet d'erreurs", shuffle(openCarnet().map(c => c.q)));
+  $("m-s1").onclick = () => startExam("S1");
+  $("m-s2").onclick = () => startExam("S2");
+  $("m-all").onclick = () => startRun("Série d'entraînement", shuffle(BANK.filter(q => q.set === "E").map(q => q.id)));
+  document.querySelectorAll(".chip[data-k]").forEach(b => b.onclick = () => startRun(NOTIONS[b.dataset.k].name, shuffle(BANK.filter(q => q.k === b.dataset.k).map(q => q.id))));
+}
+
+function baremePanel(){
+  const st = S.settings, b = BAREMES[st.bareme] || BAREMES.disc, c = st.custom;
+  return `<div class="panel"><h2>Barème de notation</h2>
+    <div class="row"><select id="bSel" aria-label="Barème">${Object.entries(BAREMES).map(([k, v]) => `<option value="${k}" ${k === st.bareme ? "selected" : ""}>${v.label}</option>`).join("")}</select>
+    <label class="small"><input type="checkbox" id="bEmpty" ${st.emptyZero ? "checked" : ""}> aucune case cochée = 0</label></div>
+    <p class="small muted" style="margin:8px 0 0">${b.info} La note sur 20 = points obtenus ÷ nombre de QCM × 20.</p>
+    ${st.bareme === "perso" ? `<div class="row small" style="margin-top:8px">${["0 discordance", "1 discordance", "2 discordances", "3 ou plus"].map((l, i) => `<label>${l} <input type="number" step="0.1" min="0" max="1" data-c="${i}" value="${c[i]}"></label>`).join("")}</div>` : ""}
+    <p class="small muted" style="margin:8px 0 0">Vérifie le barème exact dans les modalités de contrôle des connaissances de ta fac : il s'applique aussi à tout ton historique.</p></div>`;
+}
+function bindBareme(){
+  $("bSel").onchange = e => { S.settings.bareme = e.target.value; save(); renderTrainMenu(); };
+  $("bEmpty").onchange = e => { S.settings.emptyZero = e.target.checked; save(); };
+  document.querySelectorAll("input[data-c]").forEach(inp => inp.onchange = () => {
+    const v = parseFloat(String(inp.value).replace(",", ".")); if (!isFinite(v) || v < 0 || v > 1){ toast("Valeur entre 0 et 1."); inp.value = S.settings.custom[+inp.dataset.c]; return; }
+    S.settings.custom[+inp.dataset.c] = v; save();
+  });
+}
+
+/* ---------------- séance une question à la fois ---------------- */
+function startRun(label, ids){
+  if (!ids.length){ toast("Aucune question dans cette sélection."); return; }
+  exam = null; run = {label, ids, idx:0, picked:new Set(), done:null, score:0, results:[]};
+  tab = "train"; render(); window.scrollTo({top:0});
+}
+function questionHTML(q, prefix){
+  return `<div class="qmeta">${badge(q.k)} ${NOTIONS[q.k].name} · ${esc(q.title)}${q.src ? " · " + esc(q.src) : ""}</div>
+    <div class="stem">${q.stem}</div>
+    <p class="ask">Parmi les propositions suivantes, lesquelles sont correctes ?</p>
+    <ol class="props">${q.props.map((p, i) => `<li class="prop" role="checkbox" aria-checked="false" tabindex="0" data-p="${prefix}" data-i="${i}"><span class="bubble">${L[i]}</span><span class="txt">${p}<span class="mark"></span></span></li>`).join("")}</ol>`;
+}
+function bindProps(scope, getSet, isLocked){
+  scope.querySelectorAll(".prop").forEach(el => {
+    const toggle = () => { if (isLocked(el)) return; const s = getSet(el), i = +el.dataset.i; s.has(i) ? s.delete(i) : s.add(i); el.setAttribute("aria-checked", s.has(i)); };
+    el.onclick = toggle;
+    el.onkeydown = e => { if (e.key === " " || e.key === "Enter"){ e.preventDefault(); toggle(); } };
+  });
+}
+function markProps(scope, q, picked){
+  const ok = new Set(q.ok);
+  scope.querySelectorAll(".prop").forEach(el => {
+    const i = +el.dataset.i, right = picked.has(i) === ok.has(i);
+    el.setAttribute("aria-checked", picked.has(i));
+    el.classList.add(right ? "v-ok" : "v-ko");
+    el.querySelector(".mark").textContent = (ok.has(i) ? "Vraie" : "Fausse") + (right ? "" : picked.has(i) ? " · tu l'as cochée" : " · à cocher");
+  });
+}
+function corrHTML(q, picked, g){
+  const x = g === 5;
+  return `<div class="corr">
+    <p class="ans ${x ? "good" : "bad"}">${x ? "Juste." : g + "/5 propositions bien jugées."} Réponse : ${letters(q.ok)} · ta réponse : ${letters([...picked].sort())}</p>
+    <p class="small" style="margin:-4px 0 8px"><b>${fnum(pointsFor(g, [...picked]))} point${pointsFor(g, [...picked]) > 1 ? "s" : ""}</b> sur 1 au barème « ${esc(baremeName())} » (${discLabel(g, [...picked])})</p>
+    <h3>Correction pas à pas</h3><ol class="steps">${q.steps.map(s => `<li>${s}</li>`).join("")}</ol>
+    <h3>Proposition par proposition</h3><ul class="why">${q.why.map((w, i) => `<li><b>${L[i]}.</b> ${w}</li>`).join("")}</ul>
+    <div class="tip"><b>Piège :</b> ${q.tip}</div></div>`;
+}
+function diagHTML(qid){
+  const c = S.carnet[qid] || {types:[], note:""};
+  return `<div class="diag" data-q="${qid}"><p>Ajoutée à ton carnet d'erreurs. Pourquoi tu t'es trompé ?</p>
+    <div class="chips">${ERR_TYPES.map(t => `<button class="chip" data-type="${esc(t)}" aria-pressed="${(c.types || []).includes(t)}">${t}</button>`).join("")}</div>
+    <textarea placeholder="Ta note pour la prochaine fois (facultatif) : ce que tu as confondu, la règle à retenir…" style="margin-top:8px">${esc(c.note || "")}</textarea></div>`;
+}
+function bindDiag(scope){
+  scope.querySelectorAll(".diag").forEach(box => {
+    const c = S.carnet[box.dataset.q]; if (!c) return;
+    box.querySelectorAll(".chip").forEach(b => b.onclick = () => {
+      c.types = c.types || []; const t = b.dataset.type;
+      c.types.includes(t) ? c.types.splice(c.types.indexOf(t), 1) : c.types.push(t);
+      b.setAttribute("aria-pressed", c.types.includes(t)); save();
+    });
+    const ta = box.querySelector("textarea"); let h;
+    ta.oninput = () => { clearTimeout(h); h = setTimeout(() => { c.note = ta.value; save(); }, 700); };
+    ta.onblur = () => { clearTimeout(h); if (c.note !== ta.value){ c.note = ta.value; save(); } };
+  });
+}
+function renderRun(){
+  const r = run;
+  if (r.idx >= r.ids.length){
+    const ok = r.results.filter(x => x.x).length, pts = r.results.reduce((s, x) => s + pointsFor(x.g, x.p), 0);
+    $("main").innerHTML = `<div class="panel"><h2>Séance terminée : ${esc(r.label)}</h2>
+      <p><b>${fnum(pts)}/${r.results.length} points, soit ${on20(pts, r.results.length)}/20</b> au barème « ${esc(baremeName())} ».</p>
+      <p>${ok}/${r.results.length} questions entièrement justes · ${r.results.reduce((s, x) => s + x.g, 0)}/${r.results.length * 5} propositions bien jugées.</p>
+      ${r.results.some(x => !x.x) ? `<p class="muted">Les questions ratées sont dans ton carnet d'erreurs. Elles en sortent après 2 réussites de suite.</p>` : ""}
+      <div class="row"><button class="btn primary" id="again">Nouvelle séance points faibles</button><button class="btn" id="back">Retour au tableau de bord</button></div></div>`;
+    $("again").onclick = () => startRun("Points faibles", targetedIds());
+    $("back").onclick = () => { run = null; go("dash"); };
+    return;
+  }
+  const q = BY_ID[r.ids[r.idx]];
+  $("main").innerHTML = `<div class="runbar"><b>${esc(r.label)}</b><span class="muted small">Question ${r.idx + 1} sur ${r.ids.length}</span><button class="btn small" id="quit">Quitter la séance</button></div>
+    <div class="sheet" id="sheet">${questionHTML(q, "r")}
+      <div class="row" style="margin-top:14px"><button class="btn primary" id="check">Valider</button><button class="btn" id="next" hidden>${r.idx + 1 < r.ids.length ? "Question suivante" : "Voir le bilan"}</button></div>
+      <div id="after"></div></div>`;
+  r.picked = new Set(); r.done = null;
+  const sheet = $("sheet");
+  bindProps(sheet, () => r.picked, () => !!r.done);
+  $("quit").onclick = () => { run = null; render(); };
+  $("check").onclick = () => {
+    if (r.done) return;
+    r.done = record(q.id, r.picked); r.done.p = [...r.picked]; r.results.push(r.done); save();
+    sheet.classList.add("locked"); markProps(sheet, q, r.picked);
+    $("check").hidden = true; $("next").hidden = false;
+    $("after").innerHTML = (r.done.x ? (S.carnet[q.id] ? `<p class="small" style="color:var(--ok);font-weight:700;margin-top:12px">${S.carnet[q.id].status === "ok" ? "Deuxième réussite de suite : cette erreur est maîtrisée." : "Bien : encore une réussite et elle sort du carnet."}</p>` : "") : diagHTML(q.id)) + corrHTML(q, r.picked, r.done.g);
+    bindDiag($("after"));
+  };
+  $("next").onclick = () => { r.idx++; renderRun(); window.scrollTo({top:0}); };
+}
+
+/* ---------------- mode examen (sujets blancs) ---------------- */
+function startExam(set){
+  run = null;
+  exam = {set, ids:BANK.filter(q => q.set === set).sort((a, b) => a.num - b.num).map(q => q.id), answers:{}, submitted:false, remaining:1800, timer:null, started:null};
+  exam.ids.forEach(id => exam.answers[id] = new Set());
+  tab = "train"; render(); window.scrollTo({top:0});
+}
+function renderExam(){
+  const e = exam, fmt = s => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+  $("main").innerHTML = `<div class="runbar"><b>Sujet blanc n°${e.set.slice(1)} <span class="small muted">· barème « ${esc(baremeName())} »</span></b><span class="clock" id="clock">${fmt(e.remaining)}</span>
+      <span class="row">${e.submitted ? "" : `<button class="btn small" id="startClock" ${e.timer ? "hidden" : ""}>Lancer le chrono</button>`}<button class="btn small" id="quit">${e.submitted ? "Fermer" : "Abandonner"}</button></span></div>
+    <div id="examRes"></div>
+    ${e.ids.map((id, k) => `<div class="sheet ${e.submitted ? "locked" : ""}" id="ex-${id}"><b>QCM${k + 1}</b>${questionHTML(BY_ID[id], id)}<div class="after"></div></div>`).join("")}
+    ${e.submitted ? "" : `<div class="row" style="justify-content:center;margin:20px 0"><button class="btn primary" id="submit">Rendre ma copie</button></div>`}`;
+  e.ids.forEach(id => bindProps($("ex-" + id), () => e.answers[id], () => e.submitted));
+  $("quit").onclick = () => { if (!e.submitted && !confirm("Abandonner ce sujet blanc ? Tes réponses ne seront pas enregistrées.")) return; clearInterval(e.timer); exam = null; render(); };
+  if ($("startClock")) $("startClock").onclick = () => {
+    $("startClock").hidden = true; e.started = Date.now();
+    e.timer = setInterval(() => { e.remaining--; const c = $("clock"); if (c){ c.textContent = fmt(Math.max(e.remaining, 0)); c.classList.toggle("late", e.remaining <= 300); } if (e.remaining <= 0){ clearInterval(e.timer); submitExam(); } }, 1000);
+  };
+  if ($("submit")) $("submit").onclick = submitExam;
+  if (e.submitted) showExamResults();
+}
+function submitExam(){
+  const e = exam; if (!e || e.submitted) return;
+  clearInterval(e.timer); e.submitted = true;
+  e.res = e.ids.map(id => ({id, ...record(id, e.answers[id]), p:[...e.answers[id]]}));
+  const x = e.res.filter(r => r.x).length, g = e.res.reduce((s, r) => s + r.g, 0);
+  S.sessions.push({s:e.set, t:Date.now(), x, g, det:e.res.map(r => [r.g, r.p.length]), d:e.started ? Math.round((Date.now() - e.started) / 1000) : null});
+  save(); renderExam(); window.scrollTo({top:0});
+}
+function showExamResults(){
+  const e = exam, x = e.res.filter(r => r.x).length, g = e.res.reduce((s, r) => s + r.g, 0);
+  const pts = e.res.reduce((s, r) => s + pointsFor(r.g, r.p), 0);
+  const missed = e.res.filter(r => !r.x).map(r => NOTIONS[BY_ID[r.id].k].name);
+  $("examRes").innerHTML = `<div class="panel" style="border:2px solid var(--pen)"><h2>Note : ${on20(pts, e.res.length)}/20</h2>
+    <p><b>${fnum(pts)}/10 points</b> au barème « ${esc(baremeName())} » · ${x}/10 QCM entièrement justes.</p>
+    <div class="tw"><table class="list" style="margin:6px 0 10px"><tr><th>QCM</th>${e.res.map((r, i) => `<th>${i + 1}</th>`).join("")}</tr><tr><td class="small">Points</td>${e.res.map(r => `<td><b style="color:${r.x ? "var(--ok)" : pointsFor(r.g, r.p) > 0 ? "var(--warn)" : "var(--ko)"}">${fnum(pointsFor(r.g, r.p))}</b></td>`).join("")}</tr></table></div>
+    <p>${g}/50 propositions bien jugées.${missed.length ? ` Erreurs sur : ${[...new Set(missed)].join(", ")}. Elles sont dans ton carnet.` : " Aucune erreur !"}</p>
+    <p class="small muted">La correction détaillée est sous chaque QCM. Pour les questions ratées, indique pourquoi tu t'es trompé : ça alimente ton carnet.</p></div>`;
+  e.res.forEach(r => {
+    const q = BY_ID[r.id], box = $("ex-" + r.id);
+    markProps(box, q, e.answers[r.id]);
+    box.querySelector(".after").innerHTML = (r.x ? "" : diagHTML(r.id)) + corrHTML(q, e.answers[r.id], r.g);
+    bindDiag(box);
+  });
+}
+
+/* ---------------- carnet d'erreurs ---------------- */
+function statusOf(c){ return c.status === "ok" ? "ok" : c.status === "progress" ? "progress" : "open"; }
+function renderCarnet(){
+  const all = Object.values(S.carnet).filter(c => BY_ID[c.q]);
+  const f = carnetFilter;
+  const list = all.filter(c => {
+    const s = statusOf(c);
+    if (f.status === "todo" && s === "ok") return false;
+    if (f.status === "ok" && s !== "ok") return false;
+    if (f.k && BY_ID[c.q].k !== f.k) return false;
+    if (f.type && !(c.types || []).includes(f.type)) return false;
+    return true;
+  }).sort((a, b) => (statusOf(a) === "ok") - (statusOf(b) === "ok") || b.count - a.count || b.last - a.last);
+  const typeCount = {}; all.forEach(c => (c.types || []).forEach(t => typeCount[t] = (typeCount[t] || 0) + 1));
+  const topType = Object.entries(typeCount).sort((a, b) => b[1] - a[1])[0];
+  const untagged = all.filter(c => statusOf(c) !== "ok" && !(c.types || []).length).length;
+  const todo = all.filter(c => statusOf(c) !== "ok");
+  $("main").innerHTML = `
+    <div class="stats">
+      <div class="stat"><b>${all.filter(c => statusOf(c) === "open").length}</b><span>à revoir</span></div>
+      <div class="stat"><b>${all.filter(c => statusOf(c) === "progress").length}</b><span>en cours (1 réussite sur 2)</span></div>
+      <div class="stat"><b>${all.filter(c => statusOf(c) === "ok").length}</b><span>maîtrisées</span></div>
+      <div class="stat"><b>${topType ? esc(topType[0]) : "–"}</b><span>${topType ? `ton type d'erreur le plus fréquent (${topType[1]})` : "type d'erreur le plus fréquent"}</span></div>
+    </div>
+    ${all.length ? "" : `<div class="empty">Ton carnet est vide. Chaque question ratée y arrive automatiquement, avec ta réponse, la correction et la place pour noter pourquoi tu t'es trompé.</div>`}
+    ${todo.length ? `<div class="row" style="margin-bottom:12px"><button class="btn primary" id="redoAll">Refaire les ${todo.length} questions à revoir</button>${untagged ? `<span class="small muted">${untagged} erreur${untagged > 1 ? "s" : ""} sans type : indique-le pour mieux cibler.</span>` : ""}</div>` : ""}
+    ${all.length ? `<div class="panel">
+      <div class="row small">
+        <label>Statut <select id="fStatus"><option value="todo">À revoir et en cours</option><option value="ok">Maîtrisées</option><option value="all">Toutes</option></select></label>
+        <label>Notion <select id="fK"><option value="">Toutes</option>${Object.keys(NOTIONS).map(k => `<option value="${k}">${NOTIONS[k].name}</option>`).join("")}</select></label>
+        <label>Type <select id="fType"><option value="">Tous</option>${ERR_TYPES.map(t => `<option>${t}</option>`).join("")}</select></label>
+      </div></div>` : ""}
+    <div id="entries">${list.length ? list.map(entryHTML).join("") : all.length ? `<div class="empty">Aucune erreur ne correspond à ces filtres.</div>` : ""}</div>`;
+  if ($("redoAll")) $("redoAll").onclick = () => startRun("Carnet d'erreurs", shuffle(todo.map(c => c.q)));
+  if ($("fStatus")){
+    $("fStatus").value = f.status; $("fK").value = f.k; $("fType").value = f.type;
+    $("fStatus").onchange = e => { f.status = e.target.value; renderCarnet(); };
+    $("fK").onchange = e => { f.k = e.target.value; renderCarnet(); };
+    $("fType").onchange = e => { f.type = e.target.value; renderCarnet(); };
+  }
+  document.querySelectorAll(".entry").forEach(box => {
+    const c = S.carnet[box.dataset.q];
+    box.querySelector(".redo").onclick = () => startRun("Carnet d'erreurs", [c.q]);
+    box.querySelector(".del").onclick = () => { if (confirm("Retirer cette question du carnet ?")){ delete S.carnet[c.q]; save(); renderCarnet(); } };
+    box.querySelectorAll(".chip").forEach(b => b.onclick = () => {
+      c.types = c.types || []; const t = b.dataset.type;
+      c.types.includes(t) ? c.types.splice(c.types.indexOf(t), 1) : c.types.push(t);
+      b.setAttribute("aria-pressed", c.types.includes(t)); save();
+    });
+    const ta = box.querySelector("textarea"); let h;
+    ta.oninput = () => { clearTimeout(h); h = setTimeout(() => { c.note = ta.value; save(); }, 700); };
+    ta.onblur = () => { clearTimeout(h); if (c.note !== ta.value){ c.note = ta.value; save(); } };
+  });
+}
+function entryHTML(c){
+  const q = BY_ID[c.q], s = statusOf(c);
+  const pill = {open:"À revoir", progress:"En cours · 1 réussite sur 2", ok:"Maîtrisée"}[s];
+  return `<div class="entry ${s}" data-q="${c.q}">
+    <div class="row" style="justify-content:space-between"><h3>${NOTIONS[q.k].name} · ${esc(q.title)}</h3><span class="pill ${s}">${pill}</span></div>
+    <div class="small muted">${badge(q.k)} Ratée ${c.count} fois · dernière erreur le ${fmtDate(c.last)} · ta dernière réponse fausse : ${letters(c.p || [])} · bonne réponse : ${letters(q.ok)}</div>
+    <div class="preview">${q.stem}</div>
+    <div class="chips" style="margin:8px 0">${ERR_TYPES.map(t => `<button class="chip" data-type="${esc(t)}" aria-pressed="${(c.types || []).includes(t)}">${t}</button>`).join("")}</div>
+    <textarea placeholder="Pourquoi tu t'es trompé, la règle à retenir…">${esc(c.note || "")}</textarea>
+    <details><summary>Voir l'énoncé complet et la correction</summary><div class="stem" style="margin-top:8px">${q.stem}</div>
+      <ul style="list-style:none;padding:0;margin:0;font-family:var(--serif)">${q.props.map((p, i) => `<li style="padding:4px 0;border-bottom:1px dashed var(--rule)"><b>${L[i]}.</b> ${p}<br><span class="small" style="color:${q.ok.includes(i) ? "var(--ok)" : "var(--ko)"}">${q.why[i]}</span></li>`).join("")}</ul>
+      <div class="corr"><h3>Correction pas à pas</h3><ol class="steps">${q.steps.map(x => `<li>${x}</li>`).join("")}</ol><div class="tip"><b>Piège :</b> ${q.tip}</div></div></details>
+    <div class="row" style="margin-top:10px"><button class="btn small primary redo">Refaire cette question</button><button class="btn small danger del">Retirer du carnet</button></div></div>`;
+}
+
+/* ---------------- annales ---------------- */
+let annNotions = new Set();
+function renderAnnales(){
+  const today = new Date().toISOString().slice(0, 10);
+  const rows = S.annales.slice().sort((a, b) => (b.ts || 0) - (a.ts || 0));
+  const per = {}; S.annales.forEach(a => { const v = 20 * a.score / a.sur; const p = per[a.a] = per[a.a] || {n:0, best:0, last:null, lastT:0}; p.n++; p.best = Math.max(p.best, v); if ((a.ts || 0) >= p.lastT){ p.lastT = a.ts || 0; p.last = v; } });
+  const f1 = v => (Math.round(v * 10) / 10).toString().replace(".", ",");
+  $("main").innerHTML = `
+    <div class="panel"><h2>Enregistrer une annale</h2>
+      <div class="form">
+        <div class="row">
+          <div><label for="aSel">Sujet</label><select id="aSel">${ANNALES.map(([id, l]) => `<option value="${id}">${l}</option>`).join("")}</select></div>
+          <div><label for="aDate">Date</label><input type="date" id="aDate" value="${today}"></div>
+          <div><label for="aScore">Note</label><input type="number" id="aScore" min="0" step="0.5" placeholder="8,5"></div>
+          <div><label for="aSur">Sur</label><input type="number" id="aSur" min="1" step="1" value="10"></div>
+        </div>
+        <div><label>Notions où tu as perdu des points (facultatif, sert à cibler tes points faibles)</label>
+          <div class="chips" id="aNot">${Object.keys(NOTIONS).map(k => `<button class="chip" data-k="${k}" aria-pressed="${annNotions.has(k)}">${NOTIONS[k].name}</button>`).join("")}</div></div>
+        <div><button class="btn primary" id="aSave">Enregistrer</button></div>
+      </div></div>
+    <div class="panel"><h2>Progression</h2>${chartHTML()}</div>
+    <div class="panel"><h2>Par sujet</h2><div class="tw"><table class="list"><tr><th>Sujet</th><th>Passages</th><th>Dernière</th><th>Meilleure</th></tr>
+      ${ANNALES.map(([id, l]) => { const p = per[id]; return `<tr><td>${l}</td><td>${p ? p.n : "–"}</td><td>${p ? f1(p.last) + "/20" : `<span class="muted small">pas encore fait</span>`}</td><td>${p ? f1(p.best) + "/20" : ""}</td></tr>`; }).join("")}
+    </table></div></div>
+    <div class="panel"><h2>Historique</h2>${rows.length ? `<div class="tw"><table class="list"><tr><th>Date</th><th>Sujet</th><th>Note</th><th>Points perdus sur</th><th></th></tr>
+      ${rows.map(a => `<tr><td>${fmtDate(a.ts || Date.parse(a.date))}</td><td>${ANN_LABEL[a.a] || esc(a.a)}</td><td>${f1(a.score)}/${a.sur}${a.sur !== 20 ? ` <span class="small muted">(${f1(20 * a.score / a.sur)}/20)</span>` : ""}</td><td class="small">${(a.notions || []).map(k => NOTIONS[k] ? NOTIONS[k].name : k).join(", ") || "–"}</td><td><button class="btn small danger" data-del="${a.id}">Supprimer</button></td></tr>`).join("")}
+    </table></div>` : `<div class="empty">Aucune annale enregistrée. Note ici tes résultats sur les vrais sujets pour suivre ta progression.</div>`}</div>`;
+  document.querySelectorAll("#aNot .chip").forEach(b => b.onclick = () => { const k = b.dataset.k; annNotions.has(k) ? annNotions.delete(k) : annNotions.add(k); b.setAttribute("aria-pressed", annNotions.has(k)); });
+  $("aSave").onclick = () => {
+    const score = parseFloat(String($("aScore").value).replace(",", ".")), sur = parseFloat($("aSur").value), date = $("aDate").value;
+    if (!isFinite(score) || !isFinite(sur) || sur <= 0 || score < 0 || score > sur){ toast("Indique une note valide (entre 0 et le total)."); return; }
+    if (!date){ toast("Indique la date."); return; }
+    S.annales.push({id:"a" + Date.now(), a:$("aSel").value, date, ts:Date.parse(date + "T12:00:00"), score, sur, notions:[...annNotions]});
+    annNotions = new Set(); save(); toast("Annale enregistrée."); renderAnnales();
+  };
+  document.querySelectorAll("[data-del]").forEach(b => b.onclick = () => { if (!confirm("Supprimer cette note ?")) return; S.annales = S.annales.filter(a => a.id !== b.dataset.del); save(); renderAnnales(); });
+}
+
+/* ---------------- export / import / reset ---------------- */
+$("exportBtn").onclick = async () => {
+  const data = JSON.stringify(S, null, 1), filename = "carnet-ue14-" + new Date().toISOString().slice(0, 10) + ".json";
+  try {
+    const dl = window.claude && window.claude.use ? await window.claude.use("downloads") : null;
+    if (dl){ await dl.save({filename, data}); return; }
+  } catch(e){ if (e && e.code && e.code !== "unavailable") { toast("Export annulé."); return; } }
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([data], {type:"application/json"})); a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+};
+$("importFile").onchange = async e => {
+  const file = e.target.files[0]; if (!file) return;
+  try {
+    const x = JSON.parse(await file.text());
+    if (!x || !Array.isArray(x.attempts) || typeof x.carnet !== "object") throw 0;
+    if (!confirm("Remplacer tes données actuelles par celles de ce fichier ?")) return;
+    S = normalize(x); save(); render(); toast("Données importées.");
+  } catch(err){ toast("Ce fichier n'est pas une sauvegarde du carnet."); }
+  e.target.value = "";
+};
+$("resetBtn").onclick = () => { if (!confirm("Effacer toutes tes données (tentatives, carnet, annales) ? Pense à exporter avant.")) return; S = emptyState(); save(); run = null; exam = null; render(); };
+
+render();
+initRemote();
+</script>
+</body>
+</html>

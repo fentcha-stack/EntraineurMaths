@@ -220,11 +220,28 @@ figure.fig figcaption{font-family:var(--sans);font-size:.82rem;color:var(--muted
 .tutbox.none{border-left-color:var(--rule);background:var(--bg);color:var(--muted)}
 .tutbox .tutnote{margin-top:6px;font-family:var(--serif);line-height:1.55}
 
+.help .hlead{font-family:var(--serif);font-size:1.02rem;line-height:1.6;margin:0 0 10px}
+.help details.hsec{border-top:1px solid var(--rule)}
+.help details.hsec:last-child{border-bottom:1px solid var(--rule)}
+.help summary{cursor:pointer;font-weight:700;color:var(--pen);padding:11px 0}
+.help summary{-webkit-tap-highlight-color:transparent;border-radius:3px}
+.help summary:focus-visible{outline:2px solid var(--pen);outline-offset:2px}
+.help .hbody{padding:0 0 14px}
+.help p,.help li,.help dd{font-family:var(--serif);line-height:1.6}
+.help ul,.help ol{padding-left:1.3em;margin:6px 0}
+.help li{margin-bottom:6px}
+.help table.list td{vertical-align:top}
+.help kbd{font-family:var(--sans);font-size:.85rem;border:1px solid var(--rule);border-bottom-width:2px;border-radius:3px;padding:1px 6px;background:var(--bg);white-space:nowrap}
+.help dt{font-weight:700;margin-top:12px}
+.help dd{margin:2px 0 0}
+.help .hwarn{border-left:4px solid var(--warn);background:var(--warn-soft);padding:8px 10px;border-radius:0 4px 4px 0}
+.help .row{margin-top:8px}
+.panel.welcome{border:2px solid var(--pen)}
 </style>
 </head>
 <body>
 <header class="top"><div class="wrap">
-  <div class="brand"><h1>Carnet UE1.4</h1><div class="hdr-tools"><span class="sync" id="sync">Enregistré sur cet appareil</span><button class="iconbtn" id="fontMinus" aria-label="Réduire le texte">A−</button><button class="iconbtn" id="fontPlus" aria-label="Agrandir le texte">A+</button></div></div>
+  <div class="brand"><h1>Carnet UE1.4</h1><div class="hdr-tools"><span class="sync" id="sync">Enregistré sur cet appareil</span><button class="iconbtn" id="helpBtn" aria-label="Ouvrir la notice de l'application">Notice</button><button class="iconbtn" id="fontMinus" aria-label="Réduire le texte">A−</button><button class="iconbtn" id="fontPlus" aria-label="Agrandir le texte">A+</button></div></div>
   <nav class="tabs" id="tabs" aria-label="Sections">
     <button data-t="dash">Accueil</button>
     <button data-t="train">S'entraîner</button>
@@ -242,7 +259,8 @@ figure.fig figcaption{font-family:var(--sans);font-size:.82rem;color:var(--muted
     <label class="btn small" style="display:inline-block">Importer<input type="file" id="importFile" accept="application/json,.json" hidden></label>
     <button class="btn small danger" id="resetBtn">Tout effacer</button>
   </div>
-  <p class="small"><b>Version 3.6 · 5 octobre 2026</b> (annales avec figures, exercices générés, questions à passer). Tendances calculées sur les 12 sujets 2020-2026. Corrigés personnels, à confronter au corrigé officiel. Tables identiques au formulaire de l'UE.</p>
+  <p style="margin:12px 0 0"><button class="btn small" id="helpBtn2">Lire la notice de l'application</button></p>
+  <p class="small"><b>Version 3.8 · 8 octobre 2026</b> (sujet blanc aléatoire, notice intégrée). Tendances calculées sur les 12 sujets 2020-2026. Corrigés personnels, à confronter au corrigé officiel. Tables identiques au formulaire de l'UE.</p>
 </footer></div>
 <button class="btn primary fab" id="fabTables" aria-label="Ouvrir les tables statistiques">Tables</button>
 <div class="toast" id="toast" hidden></div>
@@ -554,7 +572,7 @@ function genQ(id){
 const genId = type => `G-${type}-${newSeed()}`;
 const annIdsOf = annId => ANN[annId].qs.map((r, i) => `A:${annId}:${i + 1}`);
 const allAnnIds = k => Object.keys(ANN).flatMap(id => ANN[id].qs.map((r, i) => r[0] === k ? `A:${id}:${i + 1}` : null)).filter(Boolean);
-const examLabel = set => set.startsWith("A:") ? "Annale " + ANN[set.slice(2)].label : "Sujet blanc n°" + set.slice(1);
+const examLabel = set => set === "R" ? "Sujet blanc aléatoire" : set.startsWith("A:") ? "Annale " + ANN[set.slice(2)].label : "Sujet blanc n°" + set.slice(1);
 function keyOf(annId, n){ const o = S.keys[`${annId}:${n}`]; return o || ANN[annId].qs[n - 1][1]; }
 function annQ(id){
   const [, annId, n] = id.split(":"), a = ANN[annId]; if (!a) return null;
@@ -752,7 +770,7 @@ function renderDash(){
   const notes = [...S.sessions.map(s => ({t:s.t, v:2 * sessionPts(s), lbl:"sujet blanc"})), ...S.annales.map(a => { const r = annPts(a); return {t:a.ts || Date.parse(a.date), v:20 * r.pts / r.n, lbl:"annale"}; })].sort((a, b) => a.t - b.t);
   const lastNote = notes[notes.length - 1];
   let cd = ""; if (S.settings.examDate){ const d = Math.ceil((Date.parse(S.settings.examDate + "T08:00:00") - Date.now()) / DAY); cd = d >= 0 ? `<div class="stat"><b>J−${d}</b><span>avant l'examen (${fmtDate(Date.parse(S.settings.examDate))})</span></div>` : ""; }
-  $("main").innerHTML = resumeBanner() + `
+  $("main").innerHTML = resumeBanner() + welcomeHTML() + `
     <div class="stats">
       ${cd}
       <div class="stat"><b>${due.length}</b><span>révision${due.length > 1 ? "s" : ""} prévue${due.length > 1 ? "s" : ""} aujourd'hui</span></div>
@@ -781,7 +799,7 @@ function renderDash(){
           <td>${s.due ? `<b style="color:var(--warn)">${s.due} auj.</b>` : s.open ? s.open : "–"}</td></tr>`; }).join("")}
       </table></div></div>
     <div class="panel"><h2>Progression des notes</h2>${chartHTML()}</div>`;
-  bindResume();
+  bindResume(); bindWelcome();
   if (due.length) $("goDue").onclick = () => startRun("Révisions du jour", shuffle(due.map(reviewId)));
   $("goTarget").onclick = () => startRun("Points faibles", targetedIds());
   $("goGen").onclick = () => startRun("Exercices générés (priorités)", priorityGenIds());
@@ -795,7 +813,7 @@ function legendHTML(open){
     <p class="small muted" style="margin:10px 0 0">Poids dans tes priorités : systématique 1 ; très fréquent et en hausse 0,85 ; régulier 0,65 ; en baisse 0,35. Touche un badge pour revoir sa signification.</p></details>`;
 }
 function chartHTML(){
-  const pts = [...S.annales.map(a => { const r = annPts(a); return {t:a.ts || Date.parse(a.date), v:20 * r.pts / r.n, s:"a", lbl:ANN_LABEL[a.a] || "Annale"}; }), ...S.sessions.map(s => ({t:s.t, v:2 * sessionPts(s), s:"b", lbl:"Sujet blanc n°" + s.s.slice(1)}))].filter(p => isFinite(p.t) && isFinite(p.v)).sort((a, b) => a.t - b.t);
+  const pts = [...S.annales.map(a => { const r = annPts(a); return {t:a.ts || Date.parse(a.date), v:20 * r.pts / r.n, s:"a", lbl:ANN_LABEL[a.a] || "Annale"}; }), ...S.sessions.map(s => ({t:s.t, v:2 * sessionPts(s), s:"b", lbl:examLabel(s.s)}))].filter(p => isFinite(p.t) && isFinite(p.v)).sort((a, b) => a.t - b.t);
   if (pts.length < 2) return `<div class="empty">Enregistre au moins deux notes (annale corrigée, note d'annale ou sujet blanc) pour voir ta courbe.</div>`;
   const W = 640, H = 220, pl = 34, pr = 12, pt = 12, pb = 28, t0 = pts[0].t, t1 = pts[pts.length - 1].t, span = Math.max(t1 - t0, 1);
   const x = t => pl + (W - pl - pr) * (t - t0) / span, y = v => pt + (H - pt - pb) * (1 - v / 20);
@@ -814,15 +832,16 @@ function renderTrainMenu(){
     <div class="menu">
       <button class="card hot" id="m-due" ${due ? "" : "disabled"}><b>Révisions du jour</b><span>${due ? `${due} question${due > 1 ? "s" : ""} programmée${due > 1 ? "s" : ""} (J+1, J+3, J+7, J+21)` : "rien de prévu aujourd'hui"}</span></button>
       <button class="card" id="m-target"><b>Points faibles</b><span>10 questions sur tes 3 notions prioritaires, avec des exercices générés</span></button>
-      <button class="card" id="m-gen"><b>Exercices illimités</b><span>10 exercices à données aléatoires selon tes priorités, ou choisis un type juste en dessous</span></button>
+      <button class="card" id="m-gen"><b>Exercices illimités</b><span>L'appli choisit pour toi : 10 exercices sur tes notions les plus faibles, avec des données nouvelles à chaque fois</span></button>
       <button class="card" id="m-open" ${op ? "" : "disabled"}><b>Tout mon carnet</b><span>${op ? `${op} question${op > 1 ? "s" : ""} non maîtrisée${op > 1 ? "s" : ""}, même non prévues aujourd'hui` : "carnet vide"}</span></button>
-      <button class="card" id="m-s1"><b>Sujet blanc n°1</b><span>Mode examen : 10 QCM, 30 min, correction à la fin</span></button>
-      <button class="card" id="m-s2"><b>Sujet blanc n°2</b><span>Mode examen : 10 QCM, 30 min, correction à la fin</span></button>
+      <button class="card" id="m-rand"><b>Sujet blanc aléatoire</b><span>Mode examen : 10 QCM composés comme un vrai sujet, différents à chaque fois</span></button>
+      <button class="card" id="m-s1"><b>Sujet blanc n°1</b><span>Mode examen : 10 QCM fixes, toujours les mêmes</span></button>
+      <button class="card" id="m-s2"><b>Sujet blanc n°2</b><span>Mode examen : 10 QCM fixes, toujours les mêmes</span></button>
       <button class="card" id="m-all"><b>Série d'entraînement</b><span>Les 24 questions mélangées</span></button>
       <button class="card" id="m-ann"><b>Annales (12 sujets)</b><span>À l'écran en mode examen ou en entraînement, ou correction d'une copie papier</span></button>
     </div>
     <h2 id="gen-types">Exercices générés par type</h2>
-    <p class="small muted">Chaque clic crée 5 exercices avec des données nouvelles et la correction calculée pas à pas.</p>
+    <p class="small muted">Ici, c'est toi qui choisis le type : chaque bouton lance 5 exercices de ce type, avec des données nouvelles et la correction calculée pas à pas.</p>
     <div class="chips genchips">${Object.entries(GEN_TYPES).map(([t, v]) => `<button class="chip" data-gen="${t}">${v.name}</button>`).join("")}</div>
     <h2>Par notion</h2>
     <div class="chips">${Object.keys(NOTIONS).map(k => `<button class="chip" data-k="${k}">${NOTIONS[k].name}</button>`).join("")}</div>
@@ -832,7 +851,7 @@ function renderTrainMenu(){
   $("m-target").onclick = () => startRun("Points faibles", targetedIds());
   $("m-gen").onclick = () => startRun("Exercices générés (priorités)", priorityGenIds());
   if (op) $("m-open").onclick = () => startRun("Tout mon carnet", shuffle(openList().map(reviewId)));
-  $("m-s1").onclick = () => startExam("S1"); $("m-s2").onclick = () => startExam("S2");
+  $("m-rand").onclick = () => startExam("R"); $("m-s1").onclick = () => startExam("S1"); $("m-s2").onclick = () => startExam("S2");
   $("m-all").onclick = () => startRun("Série d'entraînement", shuffle(BANK.filter(q => q.set === "E").map(q => q.id)));
   $("m-ann").onclick = () => go("annales");
   document.querySelectorAll("[data-gen]").forEach(b => b.onclick = () => startRun("Exercices générés · " + GEN_TYPES[b.dataset.gen].name, Array.from({length:5}, () => genId(b.dataset.gen))));
@@ -954,8 +973,23 @@ function showRunCorrection(q, it){
 }
 
 /* ================= mode examen ================= */
+const EXAM_SLOTS = [["desc"], ["etu"], ["etu", "essai"], ["inf", "diag", "essai"], ["bayes"], ["norm"], ["int"], ["chi", "moy"], ["np"], ["sdesc", "diag", "moy", "chi", "np", "etu", "desc"]];
+const existingIds = k => [...BANK.filter(q => q.k === k).map(q => q.id), ...allAnnIds(k)];
+function composeRandomExam(){
+  const last = {}; S.attempts.forEach(a => last[a.q] = a.t);
+  const st = notionStats(), used = new Set(), cnt = {}, ids = [];
+  const pickK = ks => { ks = ks.filter(k => (cnt[k] || 0) < 2); const w = ks.map(k => st[k].priority + 0.2), tot = w.reduce((a, x) => a + x, 0); let r = Math.random() * tot; for (let i = 0; i < ks.length; i++){ r -= w[i]; if (r <= 0) return ks[i]; } return ks[ks.length - 1]; };
+  const pickExisting = k => { const c = shuffle(existingIds(k).filter(id => !used.has(id))); if (!c.length) return null; const fresh = c.filter(id => !last[id]); return fresh.length ? fresh[0] : c.sort((a, b) => last[a] - last[b])[0]; };
+  const pickGen = k => { const g = gensFor(k); return g.length ? genId(g[Math.floor(Math.random() * g.length)]) : null; };
+  EXAM_SLOTS.forEach(ks => {
+    const k = pickK(ks); let id = Math.random() < 0.6 ? pickGen(k) : null;
+    if (!id) id = pickExisting(k) || pickGen(k);
+    if (id){ used.add(id); ids.push(id); cnt[k] = (cnt[k] || 0) + 1; }
+  });
+  return ids;
+}
 function startExam(set){
-  run = null; const ids = set.startsWith("A:") ? annIdsOf(set.slice(2)) : BANK.filter(q => q.set === set).sort((a, b) => a.num - b.num).map(q => q.id);
+  run = null; const ids = set === "R" ? composeRandomExam() : set.startsWith("A:") ? annIdsOf(set.slice(2)) : BANK.filter(q => q.set === set).sort((a, b) => a.num - b.num).map(q => q.id);
   exam = {set, ids, answers:Object.fromEntries(ids.map(id => [id, new Set()])), conf:{}, submitted:false, deadline:null, started:null, timer:null};
   tab = "train"; saveSession(); render(); window.scrollTo({top:0});
 }
@@ -1133,6 +1167,20 @@ function renderFiches(){
 }
 
 /* ================= fenêtres : tables, fiches ================= */
+const HELP_HTML = "<div class=\"help\"><p class=\"hlead\">Le Carnet UE1.4 t'entraîne sur les QCM de Santé publique et statistiques : il corrige chaque réponse en détail, garde tes erreurs pour te les refaire au bon moment et te montre les notions à travailler en priorité. Touche un titre pour l'ouvrir.<\/p><details class=\"hsec\" open><summary>En 30 secondes<\/summary><div class=\"hbody\">\n<div class=\"tw\"><table class=\"list\"><tr><th>Onglet<\/th><th>À quoi il sert<\/th><\/tr>\n<tr><td><b>Accueil<\/b><\/td><td>Tes chiffres du jour, tes 3 priorités, ta maîtrise par notion et la courbe de tes notes sur 20.<\/td><\/tr>\n<tr><td><b>S'entraîner<\/b><\/td><td>Toutes les séances : révisions du jour, points faibles, exercices générés, sujets blancs (dont un aléatoire, neuf à chaque fois), une notion précise.<\/td><\/tr>\n<tr><td><b>Carnet<\/b><\/td><td>Tes erreurs, reprogrammées à J+1, J+3, J+7 puis J+21. Le chiffre sur l'onglet = révisions à faire aujourd'hui.<\/td><\/tr>\n<tr><td><b>Annales<\/b><\/td><td>Les 12 sujets 2020-2026 (120 QCM) à l'écran, ou la correction de ta copie papier.<\/td><\/tr>\n<tr><td><b>Fiches<\/b><\/td><td>15 fiches méthode (une par notion, plus « Quel test choisir ? ») et les tables statistiques.<\/td><\/tr>\n<\/table><\/div>\n<p>Le bouton <b>Tables<\/b>, en bas à droite, ouvre à tout moment les tables et le formulaire, identiques à ceux de l'examen.<\/p><\/div><\/details><details class=\"hsec\"><summary>Le parcours conseillé<\/summary><div class=\"hbody\">\n<ol class=\"hsteps\">\n<li><b>Le premier jour, règle l'application.<\/b> Dans les Réglages (bas de page), vérifie que le barème est celui de ta fac et indique la date de ton examen : l'accueil affichera le compte à rebours.<\/li>\n<li><b>Fais un diagnostic.<\/b> Un sujet blanc ou une annale en mode examen, chrono lancé. Tes erreurs remplissent le carnet et l'accueil calcule tes premières priorités.<\/li>\n<li><b>Chaque jour, commence par les révisions du jour.<\/b> Le chiffre orange sur l'onglet Carnet te dit combien il y en a. Enchaîne avec « 10 questions sur mes points faibles » ou « 10 exercices générés ».<\/li>\n<li><b>Chaque semaine, un sujet blanc aléatoire ou une annale en mode examen<\/b>, pour suivre ta note sur 20 dans des conditions réelles. Le sujet aléatoire est neuf à chaque fois : ta note mesure ton niveau, pas ta mémoire du sujet.<\/li>\n<li><b>Quand tu bloques sur une notion,<\/b> lis sa fiche, puis lance 5 exercices générés du même type.<\/li>\n<\/ol><div class=\"row\"><button class=\"btn small\" data-go=\"settings\">Ouvrir les réglages<\/button><button class=\"btn small\" data-go=\"train\">Aller à S'entraîner<\/button><\/div><\/div><\/details><details class=\"hsec\"><summary>Répondre à une question<\/summary><div class=\"hbody\">\n<ul>\n<li><b>Coche<\/b> les propositions que tu juges justes (A à E). Tu peux en cocher plusieurs, ou aucune.<\/li>\n<li><b>Valide en indiquant ta confiance<\/b> : « sûr », « hésitant » ou « au hasard ». Sois honnête : une bonne réponse au hasard est traitée comme une erreur, et une réponse hésitante est reprogrammée pour être consolidée.<\/li>\n<li><b>Passer cette question<\/b> : elle n'est ni notée ni ajoutée au carnet. Le bilan de fin de séance propose de faire les questions passées.<\/li>\n<li><b>← Précédente<\/b> revient en arrière, même sur une question déjà corrigée.<\/li>\n<li><b>← Menu<\/b> met la séance de côté : un bandeau « Séance en cours » te permet de la reprendre exactement où tu en étais. <b>Arrêter<\/b> la termine ; les réponses déjà validées restent enregistrées.<\/li>\n<\/ul>\n<p>Si tu fermes l'application en pleine séance, tu la retrouves aussi avec le bandeau « Séance en cours ».<\/p><\/div><\/details><details class=\"hsec\"><summary>Lire la correction<\/summary><div class=\"hbody\">\n<ol class=\"hsteps\">\n<li><b>Ta note sur la question<\/b> : la bonne réponse, la tienne, et les points obtenus au barème choisi (avec le nombre de discordances).<\/li>\n<li><b>Pourquoi tu t'es trompé ?<\/b> (si tu as fait une erreur) : choisis le type d'erreur et ajoute une note. Ça sert à cibler, et tu retrouves la note dans le carnet.<\/li>\n<li><b>L'essentiel<\/b> : chaque proposition, vraie ou fausse, avec sa justification courte.<\/li>\n<li><b>À retenir<\/b> (ou Piège) : la règle à mémoriser pour ce type de QCM.<\/li>\n<li><b>Corrigé du tutorat<\/b> (annales seulement) : encadré vert « ✓ identique » si on est d'accord, orange « ⚠ Divergence » sinon, avec l'analyse de l'écart.<\/li>\n<li><b>Calcul et raisonnement pas à pas<\/b> : le choix du test, les calculs avec les vrais chiffres, la lecture de la table. Ouvert d'office quand tu t'es trompé.<\/li>\n<\/ol>\n<p>Après la correction, les <mark class=\"kw\">indices de l'énoncé<\/mark> (« tirés au sort », « mêmes patients », « loi normale »…) sont surlignés en jaune : ce sont eux qui décident du test à choisir. Le lien « Revoir la fiche » ouvre la fiche de la notion.<\/p><\/div><\/details><details class=\"hsec\"><summary>Le carnet d'erreurs et les révisions<\/summary><div class=\"hbody\">\n<p>Une question entre automatiquement dans le carnet quand tu la rates, quand tu la réussis « au hasard », ou quand tu la réussis en « hésitant » (pour consolidation).<\/p>\n<div class=\"tw\"><table class=\"list\"><tr><th>Étape<\/th><th>Prochaine révision<\/th><\/tr>\n<tr><td>Erreur<\/td><td>demain (J+1)<\/td><\/tr>\n<tr><td>1re révision réussie<\/td><td>J+3<\/td><\/tr>\n<tr><td>2e révision réussie<\/td><td>J+7<\/td><\/tr>\n<tr><td>3e révision réussie<\/td><td>J+21<\/td><\/tr>\n<tr><td>4e révision réussie<\/td><td>maîtrisée : elle sort des révisions<\/td><\/tr>\n<\/table><\/div>\n<ul>\n<li>Une nouvelle erreur la remet à J+1. Une réussite « hésitant » la garde au même niveau.<\/li>\n<li>Une réussite <b>avant<\/b> la date prévue ne fait pas avancer la révision : c'est l'espacement qui ancre la mémoire.<\/li>\n<li>Pour un exercice généré, la révision te propose <b>de nouvelles données<\/b> : impossible de réussir en te souvenant des chiffres.<\/li>\n<li>Dans l'onglet Carnet, filtre par statut, notion ou type d'erreur. Chaque fiche permet de revoir l'énoncé et la correction, de refaire la question tout de suite ou de la retirer du carnet.<\/li>\n<\/ul><\/div><\/details><details class=\"hsec\"><summary>Les séances d'entraînement<\/summary><div class=\"hbody\">\n<div class=\"tw\"><table class=\"list\"><tr><th>Séance<\/th><th>Contenu<\/th><\/tr>\n<tr><td>Révisions du jour<\/td><td>les questions du carnet prévues aujourd'hui<\/td><\/tr>\n<tr><td>Points faibles<\/td><td>10 questions sur tes 3 notions prioritaires, en commençant par leurs révisions du jour<\/td><\/tr>\n<tr><td>Exercices illimités<\/td><td>10 exercices générés ; l'appli choisit les types selon tes notions les plus faibles<\/td><\/tr>\n<tr><td>Exercices générés par type<\/td><td>5 exercices du type choisi parmi 9 : Mann-Whitney, Wilcoxon, χ² 2 × 2, loi normale, intervalles, Bayes, odds ratio, comparaison de moyennes, taux épidémiologiques<\/td><\/tr>\n<tr><td>Par notion<\/td><td>questions de la banque et des annales sur une des 14 notions, complétées par des exercices générés<\/td><\/tr>\n<tr><td>Tout mon carnet<\/td><td>toutes les questions non maîtrisées, même non prévues aujourd'hui<\/td><\/tr>\n<tr><td>Sujet blanc aléatoire<\/td><td>mode examen, 10 QCM composés comme un vrai sujet, différents à chaque fois<\/td><\/tr>\n<tr><td>Sujets blancs n°1 et n°2<\/td><td>mode examen, 10 QCM fixes (toujours les mêmes)<\/td><\/tr>\n<tr><td>Série d'entraînement<\/td><td>les 24 questions de base, mélangées<\/td><\/tr>\n<\/table><\/div>\n<p>Les exercices générés ont des données différentes à chaque fois et une correction calculée pas à pas. Ils entraînent la mécanique des calculs ; les annales restent indispensables pour les formulations pièges.<\/p><\/div><\/details><details class=\"hsec\"><summary>Le mode examen (sujets blancs et annales)<\/summary><div class=\"hbody\">\n<p><b>Le sujet blanc aléatoire<\/b> est composé à chaque lancement, sur le modèle des vrais sujets : 10 QCM, l'épidémiologie d'abord puis les statistiques. Les 4 notions systématiques (tests non paramétriques, études et OR/RR, intervalles, loi normale) tombent à chaque fois ; les autres sont choisies en tenant compte de tes points faibles. Il mélange des exercices générés, aux données neuves, et des QCM d'annales ou de la banque, en commençant par ceux que tu n'as jamais faits.<\/p>\n<p>Les sujets blancs n°1 et n°2 et les annales sont fixes : la première fois, ils donnent un bon diagnostic ; refaits, ils mesurent surtout ta mémoire du sujet.<\/p>\n<ul>\n<li>Toutes les questions sont sur une seule page. Tu peux en laisser vides : une question sans case cochée vaut 0, comme le jour de l'examen.<\/li>\n<li><b>Lancer le chrono<\/b> est facultatif (30 minutes). Il tourne en temps réel, même si tu mets le sujet de côté ou fermes l'application. À zéro, la copie est rendue automatiquement.<\/li>\n<li>Sous chaque QCM, indique ta confiance (sûr, hésitant, au hasard) : elle compte pour le carnet.<\/li>\n<li><b>Rendre ma copie<\/b> affiche ta note sur 20, les points QCM par QCM (vert = juste, orange = points partiels, rouge = 0), puis la correction détaillée sous chaque question. La note d'une annale s'enregistre dans l'onglet Annales.<\/li>\n<\/ul><\/div><\/details><details class=\"hsec\"><summary>Les annales<\/summary><div class=\"hbody\">\n<p>Les 12 sujets (1ère et 2e chance, 2020-21 à 2025-26) sont dans l'application : 120 QCM avec énoncés, données, figures et correction détaillée. Touche une figure pour l'agrandir.<\/p>\n<ul>\n<li><b>Faire une annale à l'écran<\/b> : choisis le sujet, puis « Mode examen » ou « Entraînement » (correction après chaque QCM, possibilité de passer).<\/li>\n<li><b>Corriger une copie papier<\/b> : fais le sujet sur feuille, reporte ta grille, touche « Corriger ma copie ». Tu obtiens ta note, la comparaison avec le tutorat et une justification par QCM ; tes erreurs vont dans le carnet.<\/li>\n<li><b>Modifier un corrigé<\/b> : après la correction d'une copie, le bouton « Modifier » sous un QCM permet d'enregistrer le corrigé officiel si tu en obtiens un. Ta note, ton historique et les corrections à l'écran sont recalculés.<\/li>\n<li><b>Seulement noter un résultat<\/b> : saisis une note obtenue ailleurs, avec les notions où tu as perdu des points ; elles comptent dans tes priorités.<\/li>\n<\/ul>\n<p><b>Fiabilité des corrigés.<\/b> Les corrigés sont confrontés à ceux du tutorat (sauf 2025-26 2e chance, sans corrigé). Un ⚠ signale un corrigé incertain (énoncé ambigu ou difficile à lire) : vérifie-le avec ton tutorat ou ton enseignant.<\/p><\/div><\/details><details class=\"hsec\"><summary>Tendances, priorités et maîtrise<\/summary><div class=\"hbody\">\n<p>Chaque notion porte un badge selon sa fréquence dans les 12 sujets. Touche un badge pour revoir sa signification.<\/p>\n<div class=\"tw\"><table class=\"list\"><tr><th>Badge<\/th><th>Signification<\/th><th>Poids<\/th><\/tr>\n<tr><td><span class=\"trend t-sys\">Systématique<\/span><\/td><td>10 sujets sur 12 ou plus, ou chacun des sujets récents<\/td><td>1<\/td><\/tr>\n<tr><td><span class=\"trend t-tf\">Très fréquent<\/span><\/td><td>7 à 9 sujets sur 12<\/td><td>0,85<\/td><\/tr>\n<tr><td><span class=\"trend t-up\">↗ En hausse<\/span><\/td><td>de plus en plus présent récemment<\/td><td>0,85<\/td><\/tr>\n<tr><td><span class=\"trend t-reg\">Régulier<\/span><\/td><td>4 à 6 sujets sur 12<\/td><td>0,65<\/td><\/tr>\n<tr><td><span class=\"trend t-down\">↘ En baisse<\/span><\/td><td>absent ou presque des sujets récents<\/td><td>0,35<\/td><\/tr>\n<\/table><\/div>\n<ul>\n<li><b>Maîtrise<\/b> d'une notion = part des points obtenus sur tes 8 dernières questions de cette notion, au barème choisi.<\/li>\n<li><b>Priorité<\/b> = faiblesse × poids du badge, augmentée par les erreurs en cours, les points perdus en annale et une lenteur au-delà de 3 minutes par QCM.<\/li>\n<li><b>Temps<\/b> : mesuré dans les séances question par question ; affiché en rouge au-delà de 3 minutes (le rythme de l'épreuve est de 30 minutes pour 10 QCM).<\/li>\n<\/ul><\/div><\/details><details class=\"hsec\"><summary>Barème et notes sur 20<\/summary><div class=\"hbody\">\n<p>Chaque QCM est noté selon le nombre de <b>discordances<\/b> : une case cochée à tort ou une bonne réponse oubliée.<\/p>\n<div class=\"tw\"><table class=\"list\"><tr><th>Barème<\/th><th>0 disc.<\/th><th>1<\/th><th>2<\/th><th>3 ou +<\/th><\/tr>\n<tr><td>Discordances (par défaut)<\/td><td>1<\/td><td>0,5<\/td><td>0<\/td><td>0<\/td><\/tr>\n<tr><td>EDN<\/td><td>1<\/td><td>0,5<\/td><td>0,2<\/td><td>0<\/td><\/tr>\n<tr><td>Tout ou rien<\/td><td>1<\/td><td>0<\/td><td>0<\/td><td>0<\/td><\/tr>\n<tr><td>Personnalisé<\/td><td colspan=\"4\">valeurs à régler<\/td><\/tr>\n<\/table><\/div>\n<p>Note sur 20 = points ÷ nombre de QCM × 20. Changer de barème recalcule tout ton historique. Vérifie le barème exact dans les modalités de contrôle des connaissances de ta fac.<\/p><div class=\"row\"><button class=\"btn small\" data-go=\"settings\">Ouvrir les réglages<\/button><\/div><\/div><\/details><details class=\"hsec\"><summary>Réglages et affichage<\/summary><div class=\"hbody\">\n<ul>\n<li><b>Réglages<\/b> (en bas de page) : barème, « aucune case cochée = 0 », date de l'examen, et affichage du calcul pas à pas (ouvert seulement si erreur, toujours ouvert, ou toujours replié).<\/li>\n<li><b>A− et A+<\/b> (en haut) : taille du texte.<\/li>\n<li>Le thème clair ou sombre suit celui de ton iPad.<\/li>\n<\/ul><\/div><\/details><details class=\"hsec\"><summary>Sauvegarde de tes données<\/summary><div class=\"hbody\">\n<p>L'indication en haut à droite te dit où sont tes données :<\/p>\n<ul>\n<li><b>« Synchronisé sur ton compte »<\/b> : application ouverte depuis le lien claude.ai. Tes données suivent ton compte, sur l'iPad comme sur ordinateur.<\/li>\n<li><b>« Enregistré sur cet appareil »<\/b> : application ouverte en fichier ou depuis GitHub. Les données restent dans ce navigateur, sur cet appareil.<\/li>\n<\/ul>\n<p>Chaque version (lien claude.ai, GitHub, autre navigateur) a sa propre mémoire. Pour passer de l'une à l'autre : <b>Exporter mes données<\/b> dans l'ancienne, puis <b>Importer<\/b> dans la nouvelle (l'import remplace les données existantes).<\/p>\n<p class=\"hwarn\">Exporte régulièrement, par exemple après chaque annale : c'est ta sauvegarde si le navigateur efface ses données. « Tout effacer » est définitif.<\/p><\/div><\/details><details class=\"hsec\"><summary>Raccourcis clavier<\/summary><div class=\"hbody\">\n<p>Avec un clavier branché sur l'iPad ou sur ordinateur :<\/p>\n<div class=\"tw\"><table class=\"list\">\n<tr><td><kbd>A<\/kbd> à <kbd>E<\/kbd> ou <kbd>1<\/kbd> à <kbd>5<\/kbd><\/td><td>cocher ou décocher une proposition<\/td><\/tr>\n<tr><td><kbd>Entrée<\/kbd><\/td><td>valider « sûr », puis passer à la question suivante après la correction<\/td><\/tr>\n<tr><td><kbd>→<\/kbd><\/td><td>passer la question, ou avancer après la correction<\/td><\/tr>\n<tr><td><kbd>←<\/kbd><\/td><td>revenir à la question précédente<\/td><\/tr>\n<tr><td><kbd>T<\/kbd><\/td><td>ouvrir les tables<\/td><\/tr>\n<tr><td><kbd>?<\/kbd><\/td><td>ouvrir cette notice<\/td><\/tr>\n<tr><td><kbd>Échap<\/kbd><\/td><td>fermer une fenêtre<\/td><\/tr>\n<\/table><\/div><\/div><\/details><details class=\"hsec\"><summary>Questions fréquentes<\/summary><div class=\"hbody\">\n<dl class=\"faq\">\n<dt>Je ne vois pas le menu des séances dans S'entraîner.<\/dt>\n<dd>Une séance est en cours. Touche « ← Menu » pour la mettre de côté, ou « Arrêter ».<\/dd>\n<dt>Les sujets blancs changent-ils à chaque fois ?<\/dt>\n<dd>Seul le sujet blanc aléatoire change. Les sujets blancs n°1 et n°2, les annales et la série d'entraînement sont fixes : fais-les une première fois pour te situer, puis suis ta progression avec le sujet aléatoire.<\/dd>\n<dt>Il me manque une fonction décrite ici.<\/dt>\n<dd>Tu as sans doute une ancienne version : regarde le numéro en bas de page (3.8 ou plus). Sur iPad, après une mise à jour, ferme complètement l'application puis rouvre-la.<\/dd>\n<dt>Mes résultats ont disparu.<\/dt>\n<dd>Tu utilises probablement une autre version (lien claude.ai, GitHub ou autre navigateur), qui a sa propre mémoire. Importe ta dernière sauvegarde.<\/dd>\n<dt>J'ai réussi une question, pourquoi est-elle encore dans le carnet ?<\/dt>\n<dd>Elle doit être réussie « sûr », le jour prévu, quatre fois de suite. Une réussite avant la date ou en hésitant ne la fait pas avancer.<\/dd>\n<dt>Un corrigé me semble faux.<\/dt>\n<dd>Lis l'encadré du tutorat et le calcul pas à pas. Si ton enseignant ou ton tutorat confirme une autre réponse, corrige-la avec le bouton « Modifier » (Annales, Corriger une copie papier).<\/dd>\n<dt>Le chrono a continué pendant que j'avais fermé l'application.<\/dt>\n<dd>C'est voulu : comme à l'examen, le temps tourne en continu. Ne lance le chrono que si tu peux faire le sujet d'une traite.<\/dd>\n<\/dl><\/div><\/details><\/div>";
+function openHelp(){ openDlg("Notice de l'application", HELP_HTML); if (!S.settings.helpSeen){ S.settings.helpSeen = true; save(); } }
+function welcomeHTML(){
+  if (S.attempts.length || S.annales.length || S.settings.helpSeen) return "";
+  return `<div class="panel welcome"><h2>Bienvenue dans ton Carnet UE1.4</h2>
+    <p>Pour bien démarrer : lis la notice (3 minutes), vérifie le barème dans les réglages, puis fais un premier sujet en mode examen pour obtenir tes priorités.</p>
+    <div class="row"><button class="btn primary" id="welcomeHelp">Lire la notice</button><button class="btn" id="welcomeExam">Commencer par le sujet blanc n°1</button><button class="btn small" id="welcomeHide">Masquer</button></div></div>`;
+}
+function bindWelcome(){
+  if (!$("welcomeHelp")) return;
+  $("welcomeHelp").onclick = openHelp;
+  $("welcomeExam").onclick = () => startExam("S1");
+  $("welcomeHide").onclick = () => { S.settings.helpSeen = true; save(); renderDash(); };
+}
 function openDlg(title, html){
   closeDlg(); const o = document.createElement("div"); o.className = "overlay"; o.id = "overlay";
   o.innerHTML = `<div class="dlg" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="dlg-head"><h2>${title}</h2><button class="btn small" id="dlgClose">Fermer</button></div><div class="dlg-body" id="dlgBody">${html}</div></div>`;
@@ -1187,12 +1235,16 @@ function renderSettings(){
 document.addEventListener("click", e => {
   const b = e.target.closest(".trend[data-k]");
   if (b){ e.stopPropagation(); e.preventDefault(); const n = NOTIONS[b.dataset.k]; toast(`${LEVELS[n.lvl].replace(/^[↗↘] /, "")} : ${LEVEL_INFO[n.lvl].crit} ${n.name} : ${n.d}.`, 5000); return; }
+  const g = e.target.closest("[data-go]");
+  if (g){ e.preventDefault(); e.stopPropagation(); closeDlg();
+    if (g.dataset.go === "settings"){ const st = $("settings"); st.open = true; st.scrollIntoView({block:"start"}); } else go(g.dataset.go); return; }
   const f = e.target.closest("[data-fiche]"); if (f){ e.preventDefault(); e.stopPropagation(); openFiche(f.dataset.fiche); return; }
   const z = e.target.closest("img[data-zoom]"); if (z){ e.preventDefault(); e.stopPropagation(); openDlg("Figure", `<img src="${FIGS[z.dataset.zoom]}" alt="" style="width:100%;height:auto;background:#fff;border-radius:4px"><p class="small muted">${esc(FIGCAP[z.dataset.zoom] || "")}</p>`); }
 }, true);
 document.addEventListener("keydown", e => {
   if (e.key === "Escape" && $("overlay")){ closeDlg(); return; }
   const tag = (e.target.tagName || "").toLowerCase(); if (["input", "textarea", "select", "button", "a", "summary"].includes(tag) || (e.target.closest && e.target.closest(".prop")) || $("overlay")) return;
+  if (e.key === "?"){ e.preventDefault(); openHelp(); return; }
   if (e.key === "t" || e.key === "T"){ openTables(); return; }
   if (tab !== "train" || !run || run.idx >= run.ids.length) return;
   const it = run.items[run.idx], k = e.key.toLowerCase(), map = {a:0, b:1, c:2, d:3, e:4, "1":0, "2":1, "3":2, "4":3, "5":4};
@@ -1203,6 +1255,8 @@ document.addEventListener("keydown", e => {
   else if (e.key === "ArrowLeft" && run.idx > 0){ e.preventDefault(); run.idx--; saveSession(); renderRun(); }
 });
 $("fabTables").onclick = openTables;
+$("helpBtn").onclick = openHelp;
+$("helpBtn2").onclick = openHelp;
 $("fontMinus").onclick = () => { const s = [0.9, 1, 1.12, 1.25], i = Math.max(0, s.indexOf(S.settings.font) - 1); S.settings.font = s[i] ?? 1; applyFont(); save(); };
 $("fontPlus").onclick = () => { const s = [0.9, 1, 1.12, 1.25], i = Math.min(s.length - 1, s.indexOf(S.settings.font) + 1); S.settings.font = s[i] ?? 1; applyFont(); save(); };
 $("exportBtn").onclick = async () => {
